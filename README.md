@@ -6,7 +6,7 @@ menitip barang yang menempel pada trip tersebut; aplikasi mengelola seluruh pros
 (trip, order, pembelian/sourcing, gudang, packing, pengiriman, dan keuangan
 multi-currency) dalam satu tempat.
 
-> Brand bisnis: **Bagasian**. Repo ini adalah admin panel-nya; web customer menyusul.
+> Repo ini adalah admin panel-nya; web customer menyusul.
 
 ## Tech stack
 

@@ -32,7 +32,7 @@ async function onSubmit() {
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
     <UCard class="w-full max-w-sm">
       <template #header>
-        <h1 class="text-lg font-semibold">Bagasian Admin</h1>
+        <h1 class="text-lg font-semibold">Jastipin Admin</h1>
         <p class="text-sm text-gray-500">Masuk untuk melanjutkan</p>
       </template>
 
