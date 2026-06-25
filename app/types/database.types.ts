@@ -70,6 +70,51 @@ export type Database = {
           },
         ]
       }
+      luggage_types: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          inner_height_mm: number | null
+          inner_length_mm: number | null
+          inner_width_mm: number | null
+          is_active: boolean
+          max_volume_cm3: number | null
+          max_weight_g: number
+          name: string
+          regulation_note: string | null
+          tare_weight_g: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          inner_height_mm?: number | null
+          inner_length_mm?: number | null
+          inner_width_mm?: number | null
+          is_active?: boolean
+          max_volume_cm3?: number | null
+          max_weight_g: number
+          name: string
+          regulation_note?: string | null
+          tare_weight_g?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          inner_height_mm?: number | null
+          inner_length_mm?: number | null
+          inner_width_mm?: number | null
+          is_active?: boolean
+          max_volume_cm3?: number | null
+          max_weight_g?: number
+          name?: string
+          regulation_note?: string | null
+          tare_weight_g?: number
+        }
+        Relationships: []
+      }
       menus: {
         Row: {
           icon: string | null
