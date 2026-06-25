@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "gen:types": "supabase gen types typescript --project-id ozxncdtorslivhmhtqzp --schema public > app/types/database.types.ts"
+    "gen:types": "supabase gen types typescript --project-id ozxncdtorslivhmhtqzp --schema public > app/types/database.types.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@nuxt/ui": "^3.0.0",
@@ -20,6 +21,8 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.114"
+    "@iconify-json/lucide": "^1.2.114",
+    "@playwright/test": "^1.61.1",
+    "dotenv": "^17.4.2"
   }
 }
