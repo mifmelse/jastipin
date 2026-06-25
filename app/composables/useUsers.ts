@@ -27,7 +27,10 @@ export function useUsers() {
     await $fetch('/api/users', { method: 'POST', body: payload })
     await refresh()
   }
-  async function update(id: string, payload: Partial<Omit<UserCreate, 'email' | 'password'>>) {
+  async function update(
+    id: string,
+    payload: { full_name?: string; role?: string; user_type?: string | null },
+  ) {
     await $fetch(`/api/users/${id}`, { method: 'PATCH', body: payload })
     await refresh()
   }

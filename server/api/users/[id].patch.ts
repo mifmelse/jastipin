@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, statusMessage: 'id wajib' })
 
-  const body = await readBody<{ full_name?: string; role?: string; user_type?: string }>(event)
+  const body = await readBody<{ full_name?: string; role?: string; user_type?: string | null }>(event)
 
   const admin = serverSupabaseServiceRole<Database>(event)
   const { error } = await admin

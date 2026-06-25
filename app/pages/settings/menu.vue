@@ -8,7 +8,7 @@ const { items: permissions } = usePermissions()
 const toast = useToast()
 
 const GROUP_OPTIONS = [
-  { label: '— top level —', value: '' },
+  { label: '— top level —', value: NONE },
   { label: 'Operations', value: 'Operations' },
   { label: 'Catalog', value: 'Catalog' },
   { label: 'Finance', value: 'Finance' },
@@ -17,7 +17,7 @@ const GROUP_OPTIONS = [
 ]
 
 const permissionOptions = computed(() => [
-  { label: '— visible to all —', value: '' },
+  { label: '— visible to all —', value: NONE },
   ...(permissions.value ?? []).map((p) => ({ label: p.key, value: p.key })),
 ])
 
@@ -28,15 +28,15 @@ const form = reactive({
   label: '',
   icon: '',
   path: '',
-  menu_group: '',
+  menu_group: NONE,
   sort_order: 0,
-  required_permission: '',
+  required_permission: NONE,
   is_active: true,
 })
 
 function openCreate() {
   editing.value = null
-  Object.assign(form, { label: '', icon: '', path: '', menu_group: '', sort_order: 0, required_permission: '', is_active: true })
+  Object.assign(form, { label: '', icon: '', path: '', menu_group: NONE, sort_order: 0, required_permission: NONE, is_active: true })
   open.value = true
 }
 function openEdit(row: Row) {
@@ -45,9 +45,9 @@ function openEdit(row: Row) {
     label: row.label,
     icon: row.icon ?? '',
     path: row.path ?? '',
-    menu_group: row.menu_group ?? '',
+    menu_group: fromNullable(row.menu_group),
     sort_order: row.sort_order,
-    required_permission: row.required_permission ?? '',
+    required_permission: fromNullable(row.required_permission),
     is_active: row.is_active,
   })
   open.value = true
@@ -59,9 +59,9 @@ async function save() {
       label: form.label.trim(),
       icon: form.icon.trim() || null,
       path: form.path.trim() || null,
-      menu_group: form.menu_group || null,
+      menu_group: toNullable(form.menu_group),
       sort_order: Number(form.sort_order) || 0,
-      required_permission: form.required_permission || null,
+      required_permission: toNullable(form.required_permission),
       is_active: form.is_active,
     }
     if (editing.value) await update(editing.value.id, payload)

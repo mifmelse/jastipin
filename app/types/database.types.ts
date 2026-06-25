@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      brands: {
+        Row: {
+          country_id: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+        }
+        Insert: {
+          country_id?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+        }
+        Update: {
+          country_id?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brands_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       continents: {
         Row: {
           code: string
@@ -184,6 +237,111 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          base_price: number | null
+          brand_id: string | null
+          category_id: string
+          code: string | null
+          cost_price: number | null
+          country_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          height_mm: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          length_mm: number | null
+          name: string
+          sub_category_id: string | null
+          unit_id: string
+          updated_at: string
+          weight_g: number
+          width_mm: number | null
+        }
+        Insert: {
+          base_price?: number | null
+          brand_id?: string | null
+          category_id: string
+          code?: string | null
+          cost_price?: number | null
+          country_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          height_mm?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          length_mm?: number | null
+          name: string
+          sub_category_id?: string | null
+          unit_id: string
+          updated_at?: string
+          weight_g: number
+          width_mm?: number | null
+        }
+        Update: {
+          base_price?: number | null
+          brand_id?: string | null
+          category_id?: string
+          code?: string | null
+          cost_price?: number | null
+          country_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          height_mm?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          length_mm?: number | null
+          name?: string
+          sub_category_id?: string | null
+          unit_id?: string
+          updated_at?: string
+          weight_g?: number
+          width_mm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -256,6 +414,56 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      sub_categories: {
+        Row: {
+          category_id: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          category_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          category_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      units: {
+        Row: {
+          id: string
+          is_active: boolean
+          name: string
+          symbol: string | null
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean
+          name: string
+          symbol?: string | null
+        }
+        Update: {
+          id?: string
+          is_active?: boolean
+          name?: string
+          symbol?: string | null
         }
         Relationships: []
       }

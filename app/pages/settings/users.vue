@@ -10,18 +10,18 @@ const roleOptions = computed(() =>
   (roles.value ?? []).map((r) => ({ label: r.name, value: r.name })),
 )
 const typeOptions = computed(() => [
-  { label: '— none —', value: '' },
+  { label: '— none —', value: NONE },
   ...(userTypes.value ?? []).map((t) => ({ label: t.name, value: t.name })),
 ])
 
 const open = ref(false)
 const saving = ref(false)
 const editingId = ref<string | null>(null)
-const form = reactive({ email: '', password: '', full_name: '', role: 'staff', user_type: '' })
+const form = reactive({ email: '', password: '', full_name: '', role: 'staff', user_type: NONE })
 
 function openCreate() {
   editingId.value = null
-  Object.assign(form, { email: '', password: '', full_name: '', role: 'staff', user_type: '' })
+  Object.assign(form, { email: '', password: '', full_name: '', role: 'staff', user_type: NONE })
   open.value = true
 }
 function openEdit(row: UserRow) {
@@ -31,7 +31,7 @@ function openEdit(row: UserRow) {
     password: '',
     full_name: row.full_name ?? '',
     role: row.role ?? 'staff',
-    user_type: row.user_type ?? '',
+    user_type: fromNullable(row.user_type),
   })
   open.value = true
 }
@@ -42,7 +42,7 @@ async function save() {
       await update(editingId.value, {
         full_name: form.full_name.trim() || undefined,
         role: form.role,
-        user_type: form.user_type || undefined,
+        user_type: toNullable(form.user_type),
       })
     } else {
       await create({
@@ -50,7 +50,7 @@ async function save() {
         password: form.password,
         full_name: form.full_name.trim() || undefined,
         role: form.role,
-        user_type: form.user_type || undefined,
+        user_type: toNullable(form.user_type) ?? undefined,
       })
     }
     open.value = false
