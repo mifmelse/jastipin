@@ -1,2 +1,44 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+@theme static {
+  /* Brand: grape — anchored on #672F90 at 600 */
+  --color-grape-50: #f4effa;
+  --color-grape-100: #e8dcf2;
+  --color-grape-200: #d2bae6;
+  --color-grape-300: #b492d4;
+  --color-grape-400: #9162bc;
+  --color-grape-500: #7842a1;
+  --color-grape-600: #672f90;
+  --color-grape-700: #54257a;
+  --color-grape-800: #441f62;
+  --color-grape-900: #381a50;
+  --color-grape-950: #231030;
+
+  /* Accent: honey — complementary warmth, used sparingly for delight */
+  --color-honey-50: #fdf6e9;
+  --color-honey-100: #f9e7c2;
+  --color-honey-200: #f2cd86;
+  --color-honey-400: #e8a33d;
+  --color-honey-500: #d98a1f;
+  --color-honey-600: #b86d16;
+
+  /* Type: warm, legible body (display set on headings below) */
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  /* Friendlier, rounder components */
+  --ui-radius: 0.5rem;
+}
+
+@layer base {
+  body {
+    font-family: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: "Bricolage Grotesque", "Hanken Grotesk", sans-serif;
+    letter-spacing: -0.01em;
+  }
+}

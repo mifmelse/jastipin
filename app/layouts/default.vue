@@ -17,22 +17,23 @@ function isActive(path: string | null) {
 
 const linkClass = (path: string | null) =>
   [
-    'flex items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800',
+    'flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors',
     isActive(path)
-      ? 'bg-gray-100 dark:bg-gray-800 font-medium text-primary'
-      : 'text-gray-700 dark:text-gray-300',
+      ? 'bg-primary/10 text-primary font-medium'
+      : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/60',
   ]
 </script>
 
 <template>
-  <div class="min-h-screen flex bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen flex bg-stone-50 dark:bg-stone-950">
     <aside
-      class="w-60 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col"
+      class="w-60 shrink-0 border-r border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 flex flex-col"
     >
       <div
-        class="h-14 flex items-center px-4 border-b border-gray-200 dark:border-gray-800 font-semibold"
+        class="h-14 flex items-center gap-2 px-4 border-b border-stone-200 dark:border-stone-800"
       >
-        Jastipin
+        <span class="inline-flex items-center justify-center size-7 rounded-lg bg-primary text-white font-bold text-sm">J</span>
+        <span class="font-semibold tracking-tight">Jastipin</span>
       </div>
 
       <ClientOnly>
@@ -69,9 +70,9 @@ const linkClass = (path: string | null) =>
 
     <div class="flex-1 flex flex-col min-w-0">
       <header
-        class="h-14 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-end px-4 gap-3"
+        class="h-14 border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 flex items-center justify-end px-4 gap-3"
       >
-        <span class="text-sm text-gray-500">{{ user?.email }}</span>
+        <span class="text-sm text-stone-500">{{ user?.email }}</span>
         <UButton size="sm" color="neutral" variant="soft" @click="logout">Logout</UButton>
       </header>
       <main class="flex-1 overflow-y-auto p-6">

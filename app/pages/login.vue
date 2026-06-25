@@ -29,11 +29,16 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
+  <div class="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-stone-950 px-4">
     <UCard class="w-full max-w-sm">
       <template #header>
-        <h1 class="text-lg font-semibold">Jastipin Admin</h1>
-        <p class="text-sm text-gray-500">Masuk untuk melanjutkan</p>
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center justify-center size-9 rounded-xl bg-primary text-white font-bold">J</span>
+          <div>
+            <h1 class="text-lg font-semibold leading-tight">Jastipin</h1>
+            <p class="text-sm text-stone-500">Masuk buat lanjut, ya 👋</p>
+          </div>
+        </div>
       </template>
 
       <form class="space-y-4" @submit.prevent="onSubmit">
