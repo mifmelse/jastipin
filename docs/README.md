@@ -1,0 +1,49 @@
+# Jastipin — Spec Index
+
+Spec lengkap untuk dieksekusi oleh Claude Code. Baca berurutan.
+
+## Cara pakai (untuk Claude Code)
+1. Baca `00-overview.md` — pahami konsep & 6 keputusan inti.
+2. Baca `01-architecture.md` — stack, struktur, konvensi, **RLS bertahap**.
+3. Baca `02-data-model.md` — semua tabel/field (tulis SQL sendiri sesuai ini).
+4. Baca `03-menu-rbac.md` — menu dynamic + permission.
+5. Baca `04-modules/*` — spec per modul (tanggung jawab, tab, status, handoff).
+6. Ikuti `05-execution-plan.md` — bangun fase per fase, jangan loncat.
+
+## Daftar file
+```
+docs/
+├── README.md                  (ini)
+├── 00-overview.md             konsep, glossary, prinsip
+├── 01-architecture.md         stack, folder, konvensi, RLS
+├── 02-data-model.md           semua tabel & relasi (deskripsi, bukan SQL final)
+├── 03-menu-rbac.md            menu dynamic + RBAC
+├── 04-modules/
+│   ├── 01-trip.md
+│   ├── 02-crm.md
+│   ├── 03-order.md
+│   ├── 04-product.md
+│   ├── 05-fulfillment.md
+│   ├── 06-warehouse.md
+│   ├── 07-load-planning.md
+│   ├── 08-delivery.md
+│   ├── 09-finance.md
+│   └── 10-master-settings.md
+└── 05-execution-plan.md       urutan build bertahap
+```
+
+## Keputusan terkunci (ringkas)
+- Stack: Nuxt 4 + @nuxt/ui 3 + Pinia + Supabase. YAGNI bertahap.
+- Order menempel ke **leg** (`trip_route`), bukan trip.
+- Satu entitas **product** (brand/category/sub/unit/country, + weight & dimensi).
+- Fulfillment: `fulfillment_type` (`sourcing`|`drop_in`).
+- **Carry-over antar leg DIIZINKAN** (dicatat di `load_items.trip_route_id`).
+- Luggage = master data; product wajib weight/dimensi → Load Planning.
+- Finance dipecah: receivable / payable / trip-expense.
+- Menu & permission **dynamic dari DB**; permission MVP = UI only (RLS menyusul).
+- Menu: 5 grup, min 2 anak, max 2 level, lebih dalam = tabs.
+
+## Sudah ada di repo
+- `continents`, `countries` (geo, ter-seed) — kini di **Master Data**.
+- `profiles` + trigger auto-create (role admin/staff/customer).
+- Pages: index, login, confirm.

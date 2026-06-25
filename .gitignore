@@ -1,0 +1,25 @@
+# Nuxt
+.nuxt
+.output
+.data
+dist
+.nitro
+.cache
+
+# Dependencies
+node_modules
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Supabase
+supabase/.temp
+supabase/.branches
+
+# Logs / OS
+*.log
+.DS_Store
+
+.remember

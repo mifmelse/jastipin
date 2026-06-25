@@ -1,0 +1,25 @@
+{
+  "name": "bagasian-admin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "gen:types": "supabase gen types typescript --project-id ozxncdtorslivhmhtqzp --schema public > app/types/database.types.ts"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^3.0.0",
+    "@nuxtjs/supabase": "^1.5.0",
+    "@pinia/nuxt": "^0.11.0",
+    "nuxt": "^4.0.0",
+    "pinia": "^3.0.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.114"
+  }
+}
