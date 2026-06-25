@@ -54,7 +54,7 @@ async function save() {
   }
 }
 async function onDelete(row: Row) {
-  if (!confirm(`Hapus country "${row.name}"?`)) return
+  if (!(await useConfirm().confirm({ title: 'Hapus country', description: `Hapus "${row.name}"?` }))) return
   try {
     await remove(row.id)
   } catch (e) {

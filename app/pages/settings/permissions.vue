@@ -35,7 +35,7 @@ async function save() {
   }
 }
 async function onDelete(row: Row) {
-  if (!confirm(`Hapus permission "${row.key}"?`)) return
+  if (!(await useConfirm().confirm({ title: 'Hapus permission', description: `Hapus "${row.key}"?` }))) return
   try {
     await remove(row.id)
   } catch (e) {

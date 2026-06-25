@@ -39,7 +39,7 @@ async function save() {
   }
 }
 async function onDelete(row: Role) {
-  if (!confirm(`Hapus role "${row.name}"? Assignment permission-nya ikut terhapus.`)) return
+  if (!(await useConfirm().confirm({ title: 'Hapus role', description: `Hapus "${row.name}"? Assignment permission-nya ikut terhapus.` }))) return
   try {
     await remove(row.id)
   } catch (e) {
