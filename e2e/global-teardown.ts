@@ -9,7 +9,16 @@ export default async function globalTeardown() {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } })
 
   // Sweep any leftover e2e fixtures. Order respects FKs (children first).
+  // CRM leads: by contact_name, plus any linked to an e2e customer (customer_id
+  // is SET NULL on customer delete, so those would otherwise leak). Activities
+  // cascade with their lead.
+  await admin.from('crm_pipeline').delete().like('contact_name', 'E2E%')
+  const { data: e2eCustomers } = await admin.from('customers').select('id').like('name', 'E2E%')
+  if (e2eCustomers?.length) {
+    await admin.from('crm_pipeline').delete().in('customer_id', e2eCustomers.map((c) => c.id))
+  }
   await admin.from('trips').delete().like('name', 'E2E%')
+  await admin.from('customers').delete().like('name', 'E2E%')
   await admin.from('products').delete().like('name', 'E2E%')
   await admin.from('brands').delete().like('name', 'E2E%')
   await admin.from('luggage_types').delete().like('name', 'E2E%')

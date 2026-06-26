@@ -123,6 +123,112 @@ export type Database = {
           },
         ]
       }
+      crm_activities: {
+        Row: {
+          content: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          pipeline_id: string
+          type: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          pipeline_id: string
+          type: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          pipeline_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipeline"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_pipeline: {
+        Row: {
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          owner: string | null
+          source: string | null
+          stage: string
+          trip_id: string | null
+          updated_at: string
+          value_estimate: number | null
+        }
+        Insert: {
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          owner?: string | null
+          source?: string | null
+          stage?: string
+          trip_id?: string | null
+          updated_at?: string
+          value_estimate?: number | null
+        }
+        Update: {
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          owner?: string | null
+          source?: string | null
+          stage?: string
+          trip_id?: string | null
+          updated_at?: string
+          value_estimate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_pipeline_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_pipeline_owner_fkey"
+            columns: ["owner"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_pipeline_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       currencies: {
         Row: {
           code: string
@@ -146,6 +252,107 @@ export type Database = {
           symbol?: string | null
         }
         Relationships: []
+      }
+      customer_addresses: {
+        Row: {
+          address_line: string | null
+          city: string | null
+          country_id: string | null
+          customer_id: string
+          id: string
+          label: string | null
+          notes: string | null
+          postal_code: string | null
+          recipient_name: string | null
+          recipient_phone: string | null
+        }
+        Insert: {
+          address_line?: string | null
+          city?: string | null
+          country_id?: string | null
+          customer_id: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          postal_code?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
+        }
+        Update: {
+          address_line?: string | null
+          city?: string | null
+          country_id?: string | null
+          customer_id?: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          postal_code?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_addresses_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_addresses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          country_id: string | null
+          created_at: string
+          email: string | null
+          gender: string | null
+          id: string
+          image_url: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          country_id?: string | null
+          created_at?: string
+          email?: string | null
+          gender?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country_id?: string | null
+          created_at?: string
+          email?: string | null
+          gender?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       luggage_types: {
         Row: {
