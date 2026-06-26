@@ -9,6 +9,7 @@ export default async function globalTeardown() {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } })
 
   // Sweep any leftover e2e fixtures. Order respects FKs (children first).
+  await admin.from('trips').delete().like('name', 'E2E%')
   await admin.from('products').delete().like('name', 'E2E%')
   await admin.from('brands').delete().like('name', 'E2E%')
   await admin.from('luggage_types').delete().like('name', 'E2E%')
