@@ -18,8 +18,17 @@ const tripOptions = computed(() => [
   ...(trips.value ?? []).map((t) => ({ label: t.name, value: t.id })),
 ])
 
+const router = useRouter()
 const byStage = (stage: string) => (items.value ?? []).filter((l) => l.stage === stage)
 const leadName = (l: Lead) => l.customers?.name ?? l.contact_name ?? '(tanpa nama)'
+
+// Handoff: a lead at stage 'order' that's tied to a real customer can spawn an
+// Order with the customer (and trip→leg) prefilled.
+function createOrder(lead: Lead) {
+  const query: Record<string, string> = { customer: lead.customer_id! }
+  if (lead.trip_id) query.trip = lead.trip_id
+  router.push({ path: '/operations/orders', query })
+}
 
 // --- add lead ---
 // A lead is EITHER a fresh contact (name + phone) OR linked to an existing
@@ -133,6 +142,17 @@ const canSave = computed(() => (mode.value === 'new' ? !!form.contact_name.trim(
                 {{ lead.crm_activities?.[0]?.count ?? 0 }}
               </UButton>
             </div>
+            <UButton
+              v-if="lead.stage === 'order' && lead.customer_id"
+              size="xs"
+              color="primary"
+              variant="soft"
+              block
+              icon="i-lucide-shopping-cart"
+              @click="createOrder(lead)"
+            >
+              Buat order
+            </UButton>
           </div>
           <p v-if="!byStage(stage).length" class="text-xs text-stone-300 dark:text-stone-700 text-center py-4">—</p>
         </div>

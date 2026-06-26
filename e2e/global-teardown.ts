@@ -8,6 +8,18 @@ export default async function globalTeardown() {
   if (!url || !serviceKey) return
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } })
 
+  // Orders reference customers + legs with ON DELETE RESTRICT, so they must be
+  // purged BEFORE the customers/trips below (order_items cascade with the order).
+  const { data: ordCustomers } = await admin.from('customers').select('id').like('name', 'E2E%')
+  if (ordCustomers?.length) {
+    await admin.from('orders').delete().in('customer_id', ordCustomers.map((c) => c.id))
+  }
+  const { data: ordTrips } = await admin.from('trips').select('id').like('name', 'E2E%')
+  if (ordTrips?.length) {
+    const { data: legs } = await admin.from('trip_routes').select('id').in('trip_id', ordTrips.map((t) => t.id))
+    if (legs?.length) await admin.from('orders').delete().in('trip_route_id', legs.map((l) => l.id))
+  }
+
   // Sweep any leftover e2e fixtures. Order respects FKs (children first).
   // CRM leads: by contact_name, plus any linked to an e2e customer (customer_id
   // is SET NULL on customer delete, so those would otherwise leak). Activities

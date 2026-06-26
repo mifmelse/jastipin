@@ -1,0 +1,272 @@
+<script setup lang="ts">
+import type { Database } from '~/types/database.types'
+
+type ItemRow = Database['public']['Tables']['order_items']['Row'] & {
+  products?: { name: string } | null
+  units?: { name: string; symbol: string | null } | null
+}
+
+const props = defineProps<{ orderId: string; currency: string }>()
+const emit = defineEmits<{ changed: [] }>()
+
+const { items, create, update, remove } = useOrderItems(props.orderId)
+const { items: products } = useProducts()
+const { items: units } = useUnits()
+const toast = useToast()
+
+const productOptions = computed(() => (products.value ?? []).map((p) => ({ label: p.name, value: p.id })))
+const unitOptions = computed(() => [
+  { label: '— unit —', value: NONE },
+  ...(units.value ?? []).map((u) => ({ label: u.symbol ? `${u.name} (${u.symbol})` : u.name, value: u.id })),
+])
+
+const itemLabel = (i: ItemRow) => i.products?.name ?? i.item_name ?? '(item)'
+const lineTotal = (i: ItemRow) => i.qty * Number(i.requested_price ?? 0)
+
+// --- add / edit ---
+// An item is EITHER a catalog product OR a free-text drop-in — never both.
+const open = ref(false)
+const saving = ref(false)
+const editingId = ref<string | null>(null)
+const mode = ref<'product' | 'free'>('product')
+const form = reactive({
+  product_id: '',
+  item_name: '',
+  fulfillment_type: 'sourcing',
+  qty: 1 as number | '',
+  unit_id: NONE,
+  requested_price: '' as number | '',
+  actual_price: '' as number | '',
+  weight_g: '' as number | '',
+  length_mm: '' as number | '',
+  width_mm: '' as number | '',
+  height_mm: '' as number | '',
+  status: 'pending',
+  notes: '',
+})
+const showDims = ref(false)
+
+function reset() {
+  Object.assign(form, {
+    product_id: '', item_name: '', fulfillment_type: 'sourcing', qty: 1, unit_id: NONE,
+    requested_price: '', actual_price: '', weight_g: '', length_mm: '', width_mm: '', height_mm: '',
+    status: 'pending', notes: '',
+  })
+  showDims.value = false
+}
+function openCreate() {
+  editingId.value = null
+  mode.value = 'product'
+  reset()
+  open.value = true
+}
+function openEdit(i: ItemRow) {
+  editingId.value = i.id
+  mode.value = i.product_id ? 'product' : 'free'
+  Object.assign(form, {
+    product_id: i.product_id ?? '',
+    item_name: i.item_name ?? '',
+    fulfillment_type: i.fulfillment_type,
+    qty: i.qty,
+    unit_id: fromNullable(i.unit_id),
+    requested_price: i.requested_price ?? '',
+    actual_price: i.actual_price ?? '',
+    weight_g: i.weight_g ?? '',
+    length_mm: i.length_mm ?? '',
+    width_mm: i.width_mm ?? '',
+    height_mm: i.height_mm ?? '',
+    status: i.status,
+    notes: i.notes ?? '',
+  })
+  showDims.value = !!(i.length_mm || i.width_mm || i.height_mm)
+  open.value = true
+}
+// Toggling mode (a USER action) clears the other mode's field so product/free
+// never mix. NOT a watch(mode) — that would also fire when openEdit() sets the
+// mode programmatically and wipe the prefilled value before it renders.
+function setMode(m: 'product' | 'free') {
+  if (m === mode.value) return
+  mode.value = m
+  form.product_id = ''
+  form.item_name = ''
+}
+
+const canSave = computed(() => (mode.value === 'product' ? !!form.product_id : !!form.item_name.trim()))
+
+const num = (v: number | '') => (v === '' ? null : Number(v))
+
+async function save() {
+  saving.value = true
+  try {
+    const payload = {
+      order_id: props.orderId,
+      product_id: mode.value === 'product' ? form.product_id || null : null,
+      item_name: mode.value === 'free' ? form.item_name.trim() || null : null,
+      fulfillment_type: form.fulfillment_type,
+      qty: Number(form.qty) || 1,
+      unit_id: toNullable(form.unit_id),
+      requested_price: num(form.requested_price),
+      actual_price: num(form.actual_price),
+      weight_g: num(form.weight_g),
+      length_mm: num(form.length_mm),
+      width_mm: num(form.width_mm),
+      height_mm: num(form.height_mm),
+      status: form.status,
+      notes: form.notes.trim() || null,
+    }
+    if (editingId.value) await update(editingId.value, payload)
+    else await create(payload)
+    open.value = false
+    emit('changed')
+  } catch (e) {
+    toast.add({ title: 'Gagal menyimpan', description: (e as Error).message, color: 'error' })
+  } finally {
+    saving.value = false
+  }
+}
+
+async function onDelete(i: ItemRow) {
+  if (!(await useConfirm().confirm({ title: 'Hapus item', description: `Hapus "${itemLabel(i)}"?` }))) return
+  try {
+    await remove(i.id)
+    emit('changed')
+  } catch (e) {
+    toast.add({ title: 'Gagal menghapus', description: (e as Error).message, color: 'error' })
+  }
+}
+
+const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocaleString('id-ID')}`
+</script>
+
+<template>
+  <div class="space-y-3">
+    <div class="flex justify-end">
+      <UButton icon="i-lucide-plus" @click="openCreate">Tambah item</UButton>
+    </div>
+
+    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+          <tr>
+            <th class="px-3 py-2 font-medium">Item</th>
+            <th class="px-3 py-2 font-medium">Fulfillment</th>
+            <th class="px-3 py-2 font-medium text-right">Qty</th>
+            <th class="px-3 py-2 font-medium text-right">Harga</th>
+            <th class="px-3 py-2 font-medium text-right">Subtotal</th>
+            <th class="px-3 py-2 font-medium">Status</th>
+            <th class="px-3 py-2 w-20"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+          <tr v-for="i in (items as ItemRow[]) ?? []" :key="i.id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
+            <td class="px-3 py-2">
+              <div class="font-medium">{{ itemLabel(i) }}</div>
+              <div v-if="!i.product_id" class="text-xs text-stone-400">titipan</div>
+            </td>
+            <td class="px-3 py-2">
+              <UBadge :color="i.fulfillment_type === 'sourcing' ? 'info' : 'neutral'" variant="soft">
+                {{ i.fulfillment_type === 'sourcing' ? 'Sourcing' : 'Drop-in' }}
+              </UBadge>
+            </td>
+            <td class="px-3 py-2 text-right tabular-nums">
+              {{ i.qty }}<span v-if="i.units" class="text-stone-400"> {{ i.units.symbol ?? i.units.name }}</span>
+            </td>
+            <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ money(i.requested_price) }}</td>
+            <td class="px-3 py-2 text-right tabular-nums">{{ money(lineTotal(i)) }}</td>
+            <td class="px-3 py-2">
+              <UBadge :color="itemStatusColor(i.status)" variant="soft" class="capitalize">
+                {{ i.status.replace('_', ' ') }}
+              </UBadge>
+            </td>
+            <td class="px-3 py-2" @click.stop>
+              <div class="flex justify-end gap-1">
+                <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" aria-label="Edit item" @click="openEdit(i)" />
+                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus item" @click="onDelete(i)" />
+              </div>
+            </td>
+          </tr>
+          <tr v-if="!(items?.length)">
+            <td colspan="7" class="px-3 py-6 text-center text-stone-400">Belum ada item.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <UModal v-model:open="open" :title="editingId ? 'Edit Item' : 'Tambah Item'">
+      <template #body>
+        <div class="space-y-4">
+          <div class="inline-flex rounded-lg border border-stone-200 dark:border-stone-800 p-0.5 text-sm">
+            <button
+              type="button"
+              class="px-3 py-1 rounded-md transition-colors"
+              :class="mode === 'product' ? 'bg-primary text-white' : 'text-stone-500'"
+              @click="setMode('product')"
+            >
+              Produk katalog
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 rounded-md transition-colors"
+              :class="mode === 'free' ? 'bg-primary text-white' : 'text-stone-500'"
+              @click="setMode('free')"
+            >
+              Titipan (free-text)
+            </button>
+          </div>
+
+          <UFormField v-if="mode === 'product'" label="Produk" required>
+            <USelect v-model="form.product_id" :items="productOptions" class="w-full" placeholder="Pilih produk…" />
+          </UFormField>
+          <UFormField v-else label="Nama item" required>
+            <UInput v-model="form.item_name" class="w-full" placeholder="mis. Skincare titipan" />
+          </UFormField>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <UFormField label="Fulfillment">
+              <USelect v-model="form.fulfillment_type" :items="FULFILLMENT_OPTIONS" class="w-full" />
+            </UFormField>
+            <UFormField label="Status">
+              <USelect v-model="form.status" :items="ITEM_STATUS_OPTIONS" class="w-full" />
+            </UFormField>
+            <UFormField label="Qty">
+              <UInput v-model.number="form.qty" type="number" min="1" class="w-full" />
+            </UFormField>
+            <UFormField label="Unit">
+              <USelect v-model="form.unit_id" :items="unitOptions" class="w-full" />
+            </UFormField>
+            <UFormField :label="`Harga diminta (${currency})`">
+              <UInput v-model.number="form.requested_price" type="number" class="w-full" />
+            </UFormField>
+            <UFormField :label="`Harga aktual (${currency})`" help="Yang benar-benar dibayar shopper.">
+              <UInput v-model.number="form.actual_price" type="number" class="w-full" />
+            </UFormField>
+            <UFormField label="Berat (gram)">
+              <UInput v-model.number="form.weight_g" type="number" class="w-full" />
+            </UFormField>
+          </div>
+
+          <div>
+            <button type="button" class="text-xs text-primary hover:underline" @click="showDims = !showDims">
+              {{ showDims ? '− Sembunyikan' : '+ Tambah' }} dimensi (mm)
+            </button>
+            <div v-if="showDims" class="grid grid-cols-3 gap-3 mt-2">
+              <UFormField label="Panjang"><UInput v-model.number="form.length_mm" type="number" class="w-full" /></UFormField>
+              <UFormField label="Lebar"><UInput v-model.number="form.width_mm" type="number" class="w-full" /></UFormField>
+              <UFormField label="Tinggi"><UInput v-model.number="form.height_mm" type="number" class="w-full" /></UFormField>
+            </div>
+          </div>
+
+          <UFormField label="Notes">
+            <UInput v-model="form.notes" class="w-full" />
+          </UFormField>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2 w-full">
+          <UButton color="neutral" variant="ghost" @click="open = false">Batal</UButton>
+          <UButton :loading="saving" :disabled="!canSave" @click="save">Simpan</UButton>
+        </div>
+      </template>
+    </UModal>
+  </div>
+</template>

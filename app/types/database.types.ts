@@ -450,6 +450,175 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          actual_price: number | null
+          created_at: string
+          fulfillment_type: string
+          height_mm: number | null
+          id: string
+          item_name: string | null
+          length_mm: number | null
+          notes: string | null
+          order_id: string
+          product_id: string | null
+          qty: number
+          requested_price: number | null
+          status: string
+          unit_id: string | null
+          updated_at: string
+          weight_g: number | null
+          width_mm: number | null
+        }
+        Insert: {
+          actual_price?: number | null
+          created_at?: string
+          fulfillment_type?: string
+          height_mm?: number | null
+          id?: string
+          item_name?: string | null
+          length_mm?: number | null
+          notes?: string | null
+          order_id: string
+          product_id?: string | null
+          qty?: number
+          requested_price?: number | null
+          status?: string
+          unit_id?: string | null
+          updated_at?: string
+          weight_g?: number | null
+          width_mm?: number | null
+        }
+        Update: {
+          actual_price?: number | null
+          created_at?: string
+          fulfillment_type?: string
+          height_mm?: number | null
+          id?: string
+          item_name?: string | null
+          length_mm?: number | null
+          notes?: string | null
+          order_id?: string
+          product_id?: string | null
+          qty?: number
+          requested_price?: number | null
+          status?: string
+          unit_id?: string | null
+          updated_at?: string
+          weight_g?: number | null
+          width_mm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_summaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          code: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_id: string
+          fee: number
+          fx_rate: number
+          id: string
+          notes: string | null
+          shipping_address_id: string | null
+          shipping_cost: number
+          status: string
+          trip_route_id: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          customer_id: string
+          fee?: number
+          fx_rate?: number
+          id?: string
+          notes?: string | null
+          shipping_address_id?: string | null
+          shipping_cost?: number
+          status?: string
+          trip_route_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          customer_id?: string
+          fee?: number
+          fx_rate?: number
+          id?: string
+          notes?: string | null
+          shipping_address_id?: string | null
+          shipping_cost?: number
+          status?: string
+          trip_route_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_shipping_address_id_fkey"
+            columns: ["shipping_address_id"]
+            isOneToOne: false
+            referencedRelation: "customer_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_trip_route_id_fkey"
+            columns: ["trip_route_id"]
+            isOneToOne: false
+            referencedRelation: "trip_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           description: string | null
@@ -1051,7 +1220,58 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      order_summaries: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          customer_id: string | null
+          fee: number | null
+          fx_rate: number | null
+          id: string | null
+          item_count: number | null
+          notes: string | null
+          shipping_address_id: string | null
+          shipping_cost: number | null
+          status: string | null
+          subtotal: number | null
+          total: number | null
+          total_idr: number | null
+          trip_route_id: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_shipping_address_id_fkey"
+            columns: ["shipping_address_id"]
+            isOneToOne: false
+            referencedRelation: "customer_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_trip_route_id_fkey"
+            columns: ["trip_route_id"]
+            isOneToOne: false
+            referencedRelation: "trip_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       create_moment: {
