@@ -93,7 +93,7 @@ async function onDelete(row: Row) {
       <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-900 text-left text-gray-500">
           <tr>
@@ -134,7 +134,7 @@ async function onDelete(row: Row) {
     <UModal v-model:open="open" :title="editing ? 'Edit Menu' : 'Tambah Menu'">
       <template #body>
         <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Label" required>
               <UInput v-model="form.label" class="w-full" />
             </UFormField>

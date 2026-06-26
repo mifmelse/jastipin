@@ -60,7 +60,7 @@ async function onDelete(row: Row) {
       <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
+    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
           <tr>

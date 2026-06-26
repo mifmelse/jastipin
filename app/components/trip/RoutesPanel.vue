@@ -93,7 +93,7 @@ const valid = computed(
       </UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
+    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
           <tr>
@@ -126,7 +126,7 @@ const valid = computed(
     <UModal v-model:open="open" :title="isRound ? 'Tambah Rute (pergi–balik)' : 'Tambah Leg'">
       <template #body>
         <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="From" required>
               <USelect v-model="form.from_country_id" :items="countryOptions" class="w-full" placeholder="Pilih…" />
             </UFormField>

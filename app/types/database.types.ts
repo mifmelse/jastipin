@@ -123,6 +123,30 @@ export type Database = {
           },
         ]
       }
+      currencies: {
+        Row: {
+          code: string
+          id: string
+          is_active: boolean
+          name: string
+          symbol: string | null
+        }
+        Insert: {
+          code: string
+          id?: string
+          is_active?: boolean
+          name: string
+          symbol?: string | null
+        }
+        Update: {
+          code?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          symbol?: string | null
+        }
+        Relationships: []
+      }
       luggage_types: {
         Row: {
           category: string
@@ -446,11 +470,33 @@ export type Database = {
           },
         ]
       }
+      tax_rates: {
+        Row: {
+          id: string
+          is_active: boolean
+          name: string
+          rate: number
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean
+          name: string
+          rate?: number
+        }
+        Update: {
+          id?: string
+          is_active?: boolean
+          name?: string
+          rate?: number
+        }
+        Relationships: []
+      }
       trip_bookings: {
         Row: {
           amount: number | null
           currency: string
           date: string | null
+          fx_rate: number
           id: string
           notes: string | null
           reference_no: string | null
@@ -462,6 +508,7 @@ export type Database = {
           amount?: number | null
           currency?: string
           date?: string | null
+          fx_rate?: number
           id?: string
           notes?: string | null
           reference_no?: string | null
@@ -473,6 +520,7 @@ export type Database = {
           amount?: number | null
           currency?: string
           date?: string | null
+          fx_rate?: number
           id?: string
           notes?: string | null
           reference_no?: string | null
@@ -497,6 +545,7 @@ export type Database = {
           created_by: string | null
           currency: string
           description: string | null
+          fx_rate: number
           id: string
           receipt_url: string | null
           spent_at: string | null
@@ -508,6 +557,7 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description?: string | null
+          fx_rate?: number
           id?: string
           receipt_url?: string | null
           spent_at?: string | null
@@ -519,6 +569,7 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description?: string | null
+          fx_rate?: number
           id?: string
           receipt_url?: string | null
           spent_at?: string | null
@@ -541,29 +592,106 @@ export type Database = {
           },
         ]
       }
-      trip_moments: {
+      trip_itineraries: {
         Row: {
-          caption: string | null
           created_at: string
+          date: string | null
+          description: string | null
           id: string
-          media_url: string
+          title: string
           trip_id: string
         }
         Insert: {
-          caption?: string | null
           created_at?: string
+          date?: string | null
+          description?: string | null
           id?: string
-          media_url: string
+          title: string
           trip_id: string
         }
         Update: {
-          caption?: string | null
           created_at?: string
+          date?: string | null
+          description?: string | null
           id?: string
-          media_url?: string
+          title?: string
           trip_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trip_itineraries_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_moment_media: {
+        Row: {
+          id: string
+          moment_id: string
+          sort_order: number
+          type: string
+          url: string
+        }
+        Insert: {
+          id?: string
+          moment_id: string
+          sort_order?: number
+          type?: string
+          url: string
+        }
+        Update: {
+          id?: string
+          moment_id?: string
+          sort_order?: number
+          type?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_moment_media_moment_id_fkey"
+            columns: ["moment_id"]
+            isOneToOne: false
+            referencedRelation: "trip_moments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_moments: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          trip_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          trip_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_moments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trip_moments_trip_id_fkey"
             columns: ["trip_id"]
@@ -628,7 +756,6 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
-          itinerary: string | null
           name: string
           status: string
           total_capacity_kg: number | null
@@ -641,7 +768,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
-          itinerary?: string | null
           name: string
           status?: string
           total_capacity_kg?: number | null
@@ -654,7 +780,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
-          itinerary?: string | null
           name?: string
           status?: string
           total_capacity_kg?: number | null
@@ -722,7 +847,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_moment: {
+        Args: {
+          p_body: string
+          p_location: string
+          p_media: Json
+          p_trip_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

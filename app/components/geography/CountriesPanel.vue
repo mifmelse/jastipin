@@ -73,7 +73,7 @@ const valid = computed(
       <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-900 text-left text-gray-500">
           <tr>
@@ -112,7 +112,7 @@ const valid = computed(
           <UFormField label="Name" required>
             <UInput v-model="form.name" class="w-full" />
           </UFormField>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="ISO2" required help="2 huruf">
               <UInput v-model="form.iso2" maxlength="2" class="w-full" />
             </UFormField>

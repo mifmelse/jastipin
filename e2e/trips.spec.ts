@@ -96,6 +96,56 @@ test('trip type change resets legs', async ({ page }) => {
   await deleteRow(page, new RegExp(name))
 })
 
+test('trip slice B: bookings, expenses, itinerary, moments', async ({ page }) => {
+  const name = `E2E Trip sub ${ts}`
+  await createTrip(page, name, 'Single') // lands on Routes/Legs
+
+  // --- Bookings ---
+  await page.getByRole('tab', { name: 'Bookings' }).click()
+  await page.getByRole('button', { name: 'Tambah booking' }).click()
+  await page.getByRole('dialog').locator('input[type="text"]').first().fill('Flight GA-123')
+  await page.getByRole('button', { name: 'Simpan' }).click()
+  await expect(page.getByRole('row', { name: /Flight GA-123/ })).toBeVisible()
+  await deleteRow(page, /Flight GA-123/)
+
+  // --- Expenses (with total) ---
+  await page.getByRole('tab', { name: 'Expenses' }).click()
+  await page.getByRole('button', { name: 'Tambah expense' }).click()
+  let d = page.getByRole('dialog')
+  await d.locator('input[type="text"]').first().fill('Transport')
+  await d.locator('input[type="number"]').first().fill('1000') // amount
+  await d.getByRole('combobox').first().click() // currency
+  await page.getByRole('option', { name: 'JPY', exact: true }).click()
+  await d.locator('input[type="number"]').nth(1).fill('110') // fx_rate (foreign → shown)
+  await page.getByRole('button', { name: 'Simpan' }).click()
+  const expRow = page.getByRole('row', { name: /Transport/ })
+  await expect(expRow).toContainText('JPY')
+  await expect(page.getByText('Rp 110.000')).toBeVisible() // total IDR = 1000 × 110
+  await deleteRow(page, /Transport/)
+
+  // --- Itinerary (structured, date-based; floating add) ---
+  await page.getByRole('tab', { name: 'Itinerary' }).click()
+  await page.getByRole('button', { name: 'Tambah', exact: true }).click() // FAB
+  d = page.getByRole('dialog')
+  await d.locator('input[type="date"]').fill('2026-07-01')
+  await d.locator('input[type="text"]').first().fill('Tiba di Tokyo')
+  await page.getByRole('button', { name: 'Simpan' }).click()
+  await expect(page.getByText('Tiba di Tokyo')).toBeVisible()
+
+  // --- Moments (text-only post; floating composer) ---
+  await page.getByRole('tab', { name: 'Moments' }).click()
+  await page.getByRole('button', { name: 'Posting', exact: true }).click() // FAB
+  d = page.getByRole('dialog')
+  await d.locator('textarea').first().fill('Hari pertama seru!')
+  await d.locator('input[type="text"]').first().fill('Tokyo') // location
+  await d.getByRole('button', { name: 'Posting' }).click() // composer submit
+  await expect(page.getByText('Hari pertama seru!')).toBeVisible()
+
+  // cleanup (cascades the moment)
+  await gotoReady(page, '/operations/trips')
+  await deleteRow(page, new RegExp(name))
+})
+
 test('trip overview edit persists', async ({ page }) => {
   const name = `E2E Trip edit ${ts}`
   const renamed = `E2E Trip edited ${ts}`

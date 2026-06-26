@@ -6,6 +6,10 @@ const { trip, status } = useTrip(id)
 const tabs = [
   { label: 'Overview', slot: 'overview' as const, icon: 'i-lucide-info' },
   { label: 'Routes/Legs', slot: 'routes' as const, icon: 'i-lucide-route' },
+  { label: 'Itinerary', slot: 'itinerary' as const, icon: 'i-lucide-calendar-days' },
+  { label: 'Bookings', slot: 'bookings' as const, icon: 'i-lucide-ticket' },
+  { label: 'Expenses', slot: 'expenses' as const, icon: 'i-lucide-receipt' },
+  { label: 'Moments', slot: 'moments' as const, icon: 'i-lucide-camera' },
 ]
 </script>
 
@@ -34,6 +38,18 @@ const tabs = [
         </template>
         <template #routes>
           <TripRoutesPanel :trip-id="id" :trip-type="trip.type" />
+        </template>
+        <template #itinerary>
+          <TripItinerary :trip-id="id" />
+        </template>
+        <template #bookings>
+          <TripBookingsPanel :trip-id="id" />
+        </template>
+        <template #expenses>
+          <TripExpensesPanel :trip-id="id" />
+        </template>
+        <template #moments>
+          <TripMomentsPanel :trip-id="id" />
         </template>
       </UTabs>
     </template>

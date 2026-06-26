@@ -56,7 +56,7 @@ async function save() {
     <UFormField label="Name" required>
       <UInput v-model="form.name" class="w-full" />
     </UFormField>
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <UFormField label="Type" required>
         <USelect v-model="form.type" :items="TRIP_TYPE_OPTIONS" class="w-full" />
       </UFormField>

@@ -9,7 +9,10 @@ const { items: categories } = useCategories()
 const { items: subCategories } = useSubCategories()
 const { items: units } = useUnits()
 const { items: countries } = useCountries()
+const { items: currencies } = useCurrencies()
 const toast = useToast()
+
+const currencyOptions = computed(() => (currencies.value ?? []).map((c) => ({ label: c.code, value: c.code })))
 
 const NONE_OPT = { label: '— none —', value: NONE }
 const brandOptions = computed(() => [NONE_OPT, ...(brands.value ?? []).map((b) => ({ label: b.name, value: b.id }))])
@@ -160,7 +163,7 @@ const valid = computed(
       Butuh minimal 1 Category & 1 Unit dulu sebelum bikin product.
     </p>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
+    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
           <tr>
@@ -214,7 +217,7 @@ const valid = computed(
           <UFormField v-if="editing" label="Code" help="Otomatis dari sistem">
             <UInput :model-value="editing.code ?? ''" disabled class="w-full font-mono" />
           </UFormField>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Name" required>
               <UInput v-model="form.name" class="w-full" />
             </UFormField>
@@ -238,7 +241,7 @@ const valid = computed(
             </UFormField>
           </div>
 
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <UFormField label="Length (mm)">
               <UInput v-model.number="form.length_mm" type="number" class="w-full" />
             </UFormField>
@@ -250,7 +253,7 @@ const valid = computed(
             </UFormField>
           </div>
 
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <UFormField label="Base price">
               <UInput v-model.number="form.base_price" type="number" class="w-full" />
             </UFormField>
@@ -258,7 +261,7 @@ const valid = computed(
               <UInput v-model.number="form.cost_price" type="number" class="w-full" />
             </UFormField>
             <UFormField label="Currency">
-              <UInput v-model="form.currency" class="w-full" />
+              <USelect v-model="form.currency" :items="currencyOptions" class="w-full" />
             </UFormField>
           </div>
 

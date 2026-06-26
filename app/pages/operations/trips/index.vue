@@ -60,7 +60,7 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
       <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
+    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
           <tr>
@@ -107,7 +107,7 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
           <UFormField label="Name" required>
             <UInput v-model="form.name" class="w-full" />
           </UFormField>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Type" required>
               <USelect v-model="form.type" :items="TRIP_TYPE_OPTIONS" class="w-full" />
             </UFormField>

@@ -109,6 +109,27 @@ test('user-type + permission CRUD', async ({ page }) => {
   await deleteRow(page, new RegExp(perm.replace(/\./g, '\\.')))
 })
 
+test('currency + tax-rate CRUD', async ({ page }) => {
+  // currency (inputs: code, symbol, name)
+  await gotoReady(page, '/master-data/currencies')
+  let d = await openCreate(page)
+  await d.locator('input[type="text"]').nth(0).fill('ZZZ')
+  await d.locator('input[type="text"]').nth(2).fill('E2E Currency')
+  await page.getByRole('button', { name: 'Simpan' }).click()
+  await expect(page.getByRole('cell', { name: 'ZZZ', exact: true })).toBeVisible()
+  await deleteRow(page, /ZZZ/)
+
+  // tax rate
+  const taxName = `E2E Tax ${ts}`
+  await gotoReady(page, '/master-data/tax-rates')
+  d = await openCreate(page)
+  await d.locator('input[type="text"]').first().fill(taxName)
+  await d.locator('input[type="number"]').first().fill('5')
+  await page.getByRole('button', { name: 'Simpan' }).click()
+  await expect(page.getByRole('row', { name: new RegExp(taxName) })).toContainText('5%')
+  await deleteRow(page, new RegExp(taxName))
+})
+
 test('geography continents + countries CRUD', async ({ page }) => {
   const cont = `E2E Cont ${ts}`
   await gotoReady(page, '/master-data/geography')

@@ -21,6 +21,8 @@ export default async function globalTeardown() {
   await admin.from('menus').delete().like('label', 'E2E%')
   await admin.from('roles').delete().like('name', 'E2E%')
   await admin.from('user_types').delete().like('name', 'E2E%')
+  await admin.from('currencies').delete().like('name', 'E2E%')
+  await admin.from('tax_rates').delete().like('name', 'E2E%')
   await admin.from('permissions').delete().like('key', 'e2e%')
 
   const { data: list } = await admin.auth.admin.listUsers()

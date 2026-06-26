@@ -1,30 +1,30 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 
-type Row = Database['public']['Tables']['units']['Row']
+type Row = Database['public']['Tables']['tax_rates']['Row']
 
-const { items, create, update, remove } = useUnits()
+const { items, create, update, remove } = useTaxRates()
 const toast = useToast()
 
 const open = ref(false)
 const saving = ref(false)
 const editing = ref<Row | null>(null)
-const form = reactive({ name: '', symbol: '', is_active: true })
+const form = reactive({ name: '', rate: 0, is_active: true })
 
 function openCreate() {
   editing.value = null
-  Object.assign(form, { name: '', symbol: '', is_active: true })
+  Object.assign(form, { name: '', rate: 0, is_active: true })
   open.value = true
 }
 function openEdit(row: Row) {
   editing.value = row
-  Object.assign(form, { name: row.name, symbol: row.symbol ?? '', is_active: row.is_active })
+  Object.assign(form, { name: row.name, rate: row.rate, is_active: row.is_active })
   open.value = true
 }
 async function save() {
   saving.value = true
   try {
-    const payload = { name: form.name.trim(), symbol: form.symbol.trim() || null, is_active: form.is_active }
+    const payload = { name: form.name.trim(), rate: Number(form.rate) || 0, is_active: form.is_active }
     if (editing.value) await update(editing.value.id, payload)
     else await create(payload)
     open.value = false
@@ -35,7 +35,7 @@ async function save() {
   }
 }
 async function onDelete(row: Row) {
-  if (!(await useConfirm().confirm({ title: 'Hapus unit', description: `Hapus "${row.name}"?` }))) return
+  if (!(await useConfirm().confirm({ title: 'Hapus tax rate', description: `Hapus "${row.name}"?` }))) return
   try {
     await remove(row.id)
   } catch (e) {
@@ -48,8 +48,8 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-xl font-semibold">Units</h1>
-        <p class="text-sm text-stone-500">Satuan produk (pcs, box, pair, …).</p>
+        <h1 class="text-xl font-semibold">Tax Rates</h1>
+        <p class="text-sm text-stone-500">Tarif pajak (mis. PPN 11%). Dipakai saat hitung total order.</p>
       </div>
       <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
@@ -59,7 +59,7 @@ async function onDelete(row: Row) {
         <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
           <tr>
             <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 font-medium">Symbol</th>
+            <th class="px-3 py-2 font-medium text-right">Rate</th>
             <th class="px-3 py-2 font-medium">Active</th>
             <th class="px-3 py-2 w-24"></th>
           </tr>
@@ -67,7 +67,7 @@ async function onDelete(row: Row) {
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in items ?? []" :key="row.id">
             <td class="px-3 py-2 font-medium">{{ row.name }}</td>
-            <td class="px-3 py-2 text-stone-500">{{ row.symbol ?? '—' }}</td>
+            <td class="px-3 py-2 text-right tabular-nums">{{ row.rate }}%</td>
             <td class="px-3 py-2">
               <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft">
                 {{ row.is_active ? 'Yes' : 'No' }}
@@ -87,14 +87,14 @@ async function onDelete(row: Row) {
       </table>
     </div>
 
-    <UModal v-model:open="open" :title="editing ? 'Edit Unit' : 'Tambah Unit'">
+    <UModal v-model:open="open" :title="editing ? 'Edit Tax Rate' : 'Tambah Tax Rate'">
       <template #body>
         <div class="space-y-4">
           <UFormField label="Name" required>
-            <UInput v-model="form.name" class="w-full" />
+            <UInput v-model="form.name" class="w-full" placeholder="PPN 11%" />
           </UFormField>
-          <UFormField label="Symbol" help="contoh: pcs, box">
-            <UInput v-model="form.symbol" class="w-full" />
+          <UFormField label="Rate (%)" required>
+            <UInput v-model.number="form.rate" type="number" class="w-full" />
           </UFormField>
           <UFormField label="Active">
             <USwitch v-model="form.is_active" />

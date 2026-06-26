@@ -40,7 +40,7 @@ test('every select opens with options and closes on pick', async ({ page }) => {
   await expect(page.getByRole('cell', { name: cat })).toBeVisible()
 
   await auditModalSelects(page, '/catalog/brands', 1) // country
-  await auditModalSelects(page, '/catalog/products', 5) // category, sub, brand, unit, country
+  await auditModalSelects(page, '/catalog/products', 6) // category, sub, brand, unit, country, currency
   await auditModalSelects(page, '/master-data/luggage-types', 1) // category enum
   await auditModalSelects(page, '/settings/users', 2) // role, user_type
   await auditModalSelects(page, '/settings/menu', 2) // group, required_permission

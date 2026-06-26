@@ -96,7 +96,7 @@ async function savePerms() {
       <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-900 text-left text-gray-500">
           <tr>
@@ -153,7 +153,7 @@ async function savePerms() {
         <div class="space-y-4 max-h-[60vh] overflow-y-auto">
           <div v-for="g in permGroups" :key="g.resource">
             <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ g.resource }}</p>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <UCheckbox
                 v-for="p in g.perms"
                 :key="p.id"
