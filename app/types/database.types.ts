@@ -354,6 +354,60 @@ export type Database = {
           },
         ]
       }
+      drop_in_intakes: {
+        Row: {
+          condition: string
+          condition_note: string | null
+          courier_from: string | null
+          created_at: string
+          id: string
+          order_item_id: string
+          photo_url: string | null
+          received_at: string
+          received_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          condition?: string
+          condition_note?: string | null
+          courier_from?: string | null
+          created_at?: string
+          id?: string
+          order_item_id: string
+          photo_url?: string | null
+          received_at?: string
+          received_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          condition?: string
+          condition_note?: string | null
+          courier_from?: string | null
+          created_at?: string
+          id?: string
+          order_item_id?: string
+          photo_url?: string | null
+          received_at?: string
+          received_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drop_in_intakes_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drop_in_intakes_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       luggage_types: {
         Row: {
           category: string
@@ -817,6 +871,75 @@ export type Database = {
         }
         Relationships: []
       }
+      sourcing_records: {
+        Row: {
+          actual_price: number | null
+          created_at: string
+          currency: string
+          fx_rate: number
+          id: string
+          is_substitute: boolean
+          note: string | null
+          order_item_id: string
+          purchased_at: string | null
+          receipt_url: string | null
+          shopper_id: string | null
+          status: string
+          store_name: string | null
+          substitute_note: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_price?: number | null
+          created_at?: string
+          currency?: string
+          fx_rate?: number
+          id?: string
+          is_substitute?: boolean
+          note?: string | null
+          order_item_id: string
+          purchased_at?: string | null
+          receipt_url?: string | null
+          shopper_id?: string | null
+          status?: string
+          store_name?: string | null
+          substitute_note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_price?: number | null
+          created_at?: string
+          currency?: string
+          fx_rate?: number
+          id?: string
+          is_substitute?: boolean
+          note?: string | null
+          order_item_id?: string
+          purchased_at?: string | null
+          receipt_url?: string | null
+          shopper_id?: string | null
+          status?: string
+          store_name?: string | null
+          substitute_note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sourcing_records_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sourcing_records_shopper_id_fkey"
+            columns: ["shopper_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sub_categories: {
         Row: {
           category_id: string
@@ -1268,6 +1391,43 @@ export type Database = {
             columns: ["trip_route_id"]
             isOneToOne: false
             referencedRelation: "trip_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sourcing_summaries: {
+        Row: {
+          actual_price: number | null
+          actual_total: number | null
+          created_at: string | null
+          currency: string | null
+          fx_rate: number | null
+          id: string | null
+          is_substitute: boolean | null
+          item_qty: number | null
+          note: string | null
+          order_item_id: string | null
+          purchased_at: string | null
+          receipt_url: string | null
+          shopper_id: string | null
+          status: string | null
+          store_name: string | null
+          substitute_note: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sourcing_records_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sourcing_records_shopper_id_fkey"
+            columns: ["shopper_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

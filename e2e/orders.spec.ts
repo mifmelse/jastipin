@@ -98,8 +98,10 @@ test('crm → order handoff: lead at stage order prefills the create form', asyn
 
   await gotoReady(page, '/operations/crm')
   await page.getByRole('tab', { name: 'Pipeline' }).click()
-  // the card for this customer exposes a "Buat order" handoff
-  await page.getByRole('button', { name: 'Buat order' }).click()
+  // the card for THIS customer exposes a "Buat order" handoff (scope to its card;
+  // other leads may also sit at stage 'order')
+  const card = page.locator('div.rounded-lg', { hasText: CUST })
+  await card.getByRole('button', { name: 'Buat order' }).click()
 
   // lands on the order form with the customer prefilled + leg auto-picked
   await expect(page).toHaveURL(/\/operations\/orders\?customer=/)
