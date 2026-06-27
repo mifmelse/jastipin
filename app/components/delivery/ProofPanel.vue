@@ -82,7 +82,7 @@ async function submit() {
             </td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end">
-                <UButton size="xs" color="primary" variant="soft" icon="i-lucide-camera" @click="openProof(s)">Bukti & selesai</UButton>
+                <UButton size="xs" color="primary" variant="soft" icon="i-lucide-camera" class="whitespace-nowrap" @click="openProof(s)">Bukti & selesai</UButton>
               </div>
             </td>
           </tr>

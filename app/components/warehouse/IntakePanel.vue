@@ -103,7 +103,7 @@ const fmtG = (n: number | null) => (n == null ? '—' : `${Number(n).toLocaleStr
             <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ fmtG(estWeight(r)) }}</td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end">
-                <UButton size="xs" color="primary" variant="soft" icon="i-lucide-scale" @click="openIntake(r)">Terima & timbang</UButton>
+                <UButton size="xs" color="primary" variant="soft" icon="i-lucide-scale" class="whitespace-nowrap" @click="openIntake(r)">Terima & timbang</UButton>
               </div>
             </td>
           </tr>
