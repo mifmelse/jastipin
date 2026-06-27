@@ -16,9 +16,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>
-  <UModal v-model:open="isOpen" :ui="{ content: 'sm:max-w-3xl' }">
+  <UModal v-model:open="isOpen" :ui="{ content: 'sm:max-w-3xl bg-transparent ring-0 shadow-none' }">
     <template #content>
-      <div class="relative rounded-lg overflow-hidden bg-stone-950">
+      <div class="relative">
         <button
           class="absolute top-2 right-2 z-10 inline-flex size-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
           aria-label="Tutup"
