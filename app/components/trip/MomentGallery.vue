@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{ media: { url: string; type: string }[] }>()
+const { open: openMedia } = useMediaViewer()
 
 // >4 → show first 3 + a "+N" tile; ≤4 → show all in a grid.
 const shown = computed(() => (props.media.length > 4 ? props.media.slice(0, 3) : props.media))
@@ -12,20 +13,32 @@ const cols = computed(() => {
 
 <template>
   <div :class="['grid gap-1', cols]">
-    <div
+    <button
       v-for="(m, i) in shown"
       :key="i"
-      class="relative aspect-square overflow-hidden rounded bg-stone-100 dark:bg-stone-800"
+      type="button"
+      class="relative aspect-square overflow-hidden rounded bg-stone-100 dark:bg-stone-800 cursor-zoom-in"
+      aria-label="Lihat media"
+      @click="openMedia(media, i)"
     >
-      <video v-if="m.type === 'video'" :src="m.url" class="w-full h-full object-cover" controls />
+      <video v-if="m.type === 'video'" :src="m.url" class="w-full h-full object-cover" muted />
       <img v-else :src="m.url" alt="" class="w-full h-full object-cover" />
-    </div>
+      <div v-if="m.type === 'video'" class="absolute inset-0 flex items-center justify-center bg-black/20">
+        <UIcon name="i-lucide-play" class="size-7 text-white" />
+      </div>
+    </button>
 
-    <div v-if="extra > 0" class="relative aspect-square overflow-hidden rounded bg-stone-900">
+    <button
+      v-if="extra > 0"
+      type="button"
+      class="relative aspect-square overflow-hidden rounded bg-stone-900 cursor-zoom-in"
+      aria-label="Lihat semua media"
+      @click="openMedia(media, 3)"
+    >
       <img :src="media[3].url" alt="" class="w-full h-full object-cover opacity-50" />
       <div class="absolute inset-0 flex items-center justify-center text-white text-xl font-semibold">
         +{{ extra }}
       </div>
-    </div>
+    </button>
   </div>
 </template>

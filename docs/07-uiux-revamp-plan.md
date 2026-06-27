@@ -38,7 +38,7 @@
 - Polish **tombol-aksi-dalam-tabel** (Warehouse "Terima & timbang", Delivery "Bukti & selesai")
   biar seragam & rapi.
 
-**A2. Media lightbox** *(no DB)*
+**A2. Media lightbox** *(no DB)* — ✅ **SELESAI**
 - Komponen reusable `MediaViewer` — preview foto/video/dll **inline (modal/lightbox)**,
   bukan buka tab baru. Support **multiple media**. Dipakai semua: foto produk/brand/customer/item,
   struk sourcing, bukti delivery, moments.

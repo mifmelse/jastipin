@@ -6,6 +6,7 @@ type Shipment = Database['public']['Tables']['shipments']['Row'] & {
 }
 
 const { items, update } = useShipments()
+const { open: openMedia } = useMediaViewer()
 const toast = useToast()
 
 // proof matters once a shipment is on its way or arrived
@@ -77,7 +78,7 @@ async function submit() {
               <span v-else class="text-stone-400">—</span>
             </td>
             <td class="px-3 py-2">
-              <a v-if="s.proof_url" :href="s.proof_url" target="_blank" class="text-primary text-xs underline">Lihat</a>
+              <button v-if="s.proof_url" type="button" class="text-primary text-xs underline" @click="openMedia({ url: s.proof_url })">Lihat</button>
               <span v-else class="text-stone-400">—</span>
             </td>
             <td class="px-3 py-2" @click.stop>

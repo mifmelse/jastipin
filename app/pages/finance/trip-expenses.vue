@@ -12,6 +12,7 @@ const { data: items } = useAsyncData('finance-trip-expenses', async () => {
   if (error) throw error
   return data
 })
+const { open: openMedia } = useMediaViewer()
 
 type Row = Database['public']['Tables']['trip_expenses']['Row'] & { trips?: { name: string; code: string | null } | null }
 const idr = (r: Row) => Math.round(Number(r.amount) * Number(r.fx_rate ?? 1))
@@ -52,7 +53,7 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
               <span v-if="r.currency !== 'IDR'" class="block text-xs text-stone-400">{{ r.currency }} {{ Number(r.amount).toLocaleString('id-ID') }}</span>
             </td>
             <td class="px-3 py-2">
-              <a v-if="r.receipt_url" :href="r.receipt_url" target="_blank" class="text-primary text-xs underline">Lihat</a>
+              <button v-if="r.receipt_url" type="button" class="text-primary text-xs underline" @click="openMedia({ url: r.receipt_url })">Lihat</button>
               <span v-else class="text-stone-400">—</span>
             </td>
           </tr>

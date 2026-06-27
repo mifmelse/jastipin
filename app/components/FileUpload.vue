@@ -6,6 +6,7 @@ const props = withDefaults(
 )
 
 const { upload } = useUpload()
+const { open: openMedia } = useMediaViewer()
 const uploading = ref(false)
 const error = ref('')
 const fileInput = ref<HTMLInputElement>()
@@ -52,19 +53,23 @@ async function onChange(e: Event) {
       </UButton>
       <input ref="fileInput" type="file" :accept="accept" class="hidden" @change="onChange" />
     </div>
-    <img
+    <button
       v-if="isImage"
-      :src="url"
-      class="max-h-32 rounded-lg border border-stone-200 dark:border-stone-800"
-    />
-    <a
+      type="button"
+      class="block"
+      aria-label="Lihat gambar"
+      @click="openMedia({ url })"
+    >
+      <img :src="url" class="max-h-32 rounded-lg border border-stone-200 dark:border-stone-800 cursor-zoom-in" />
+    </button>
+    <button
       v-else-if="url"
-      :href="url"
-      target="_blank"
+      type="button"
       class="inline-block text-sm text-primary underline truncate max-w-full"
+      @click="openMedia({ url })"
     >
       Lihat file
-    </a>
+    </button>
     <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
   </div>
 </template>

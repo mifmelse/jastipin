@@ -101,5 +101,6 @@ const linkClass = (path: string | null) =>
     </div>
 
     <AppCommandPalette />
+    <MediaViewer />
   </div>
 </template>
