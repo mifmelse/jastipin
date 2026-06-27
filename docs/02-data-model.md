@@ -244,12 +244,15 @@ fisik belanja/terima ada di tabel sendiri agar order_items tetap bersih.
   id, trip_id → trips, luggage_type_id → luggage_types,
   assigned_traveler → profiles (nullable), label (mis. "Koper A"),
   status: `planned` | `packed` | `loaded` | `unloaded`.
-- **load_items** — barang dimuat ke luggage (boleh acak lintas customer).
+- **load_items** — unit barang dimuat ke luggage (boleh acak lintas customer).
   id, luggage_id → luggages (cascade), order_item_id → order_items,
   trip_route_id → trip_routes (leg mana barang ini dibawa — penting untuk
-  carry-over), placed_at, placed_by → profiles.
-  - Simulasi: total berat per luggage = Σ weight_g load_items + tare ≤ max_weight_g;
-    volume serupa.
+  carry-over), **qty (int, B5)** — jumlah unit di luggage ini, placed_at, placed_by → profiles.
+  - **unique (luggage_id, order_item_id, trip_route_id)** — 1 order_item bisa **dipecah**
+    ke beberapa luggage (B5); dalam 1 luggage+leg cukup qty-nya yang berubah.
+  - **Status (trigger):** order_item → `packed` hanya saat **semua unit** ter-place di leg-nya
+    (Σ load_items.qty ≥ order_items.qty), selain itu balik `in_warehouse`.
+  - Simulasi: berat per luggage = Σ (per-unit weight × **load_items.qty**) + tare ≤ max; volume serupa.
 
 ### Delivery
 - **shipments** — id, order_id → orders (atau granular per order_item bila perlu),

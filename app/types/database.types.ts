@@ -488,6 +488,7 @@ export type Database = {
           order_item_id: string
           placed_at: string
           placed_by: string | null
+          qty: number
           trip_route_id: string
         }
         Insert: {
@@ -496,6 +497,7 @@ export type Database = {
           order_item_id: string
           placed_at?: string
           placed_by?: string | null
+          qty?: number
           trip_route_id: string
         }
         Update: {
@@ -504,6 +506,7 @@ export type Database = {
           order_item_id?: string
           placed_at?: string
           placed_by?: string | null
+          qty?: number
           trip_route_id?: string
         }
         Relationships: [
@@ -2172,6 +2175,7 @@ export type Database = {
         }
         Returns: string
       }
+      sync_pack_status: { Args: { p_item: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

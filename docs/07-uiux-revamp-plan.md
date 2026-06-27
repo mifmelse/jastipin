@@ -82,6 +82,9 @@
   modal lepas picker route; dropdown traveler koper **dibatasi ke traveler trip**.
 - **B3** ✅ **Drag-n-drop** (vuedraggable/Sortable.js) — queue → koper, antar koper; tombol tap + x tetap (fallback).
 - **B4** ✅ Simulation tampil **nama traveler** + **filter (traveler) & sort (nama/berat/sisa)**.
+- **B5** ✅ **Packing qty-aware** — `load_items.qty`; 1 item bisa dipecah ke beberapa koper
+  (drag pindah semua + stepper −/+); status `packed` cuma saat semua unit ter-place; berat/volume
+  kartu & simulasi pakai qty; kartu queue tampil berat·p×l×t·volume.
 
 ## FASE C — Order & Fulfillment
 - Produk dipilih di item order → **harga auto-fill** (dari `products.price`, editable);
