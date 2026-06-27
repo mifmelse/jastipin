@@ -2,6 +2,11 @@
 
 Spec lengkap untuk dieksekusi oleh Claude Code. Baca berurutan.
 
+> ✅ **STATUS: SELESAI (12/12 fase).** Spec di bawah adalah niat desain awal. Untuk
+> **realita final**, baca **`06-as-built.md`** lebih dulu — di sana terdokumentasi
+> apa yang benar-benar dibangun (view, trigger, multi-currency, payables = VIEW)
+> dan semua deviasi dari spec. Bila berbeda, **as-built yang berlaku**.
+
 ## Cara pakai (untuk Claude Code)
 1. Baca `00-overview.md` — pahami konsep & 6 keputusan inti.
 2. Baca `01-architecture.md` — stack, struktur, konvensi, **RLS bertahap**.
@@ -9,6 +14,7 @@ Spec lengkap untuk dieksekusi oleh Claude Code. Baca berurutan.
 4. Baca `03-menu-rbac.md` — menu dynamic + permission.
 5. Baca `04-modules/*` — spec per modul (tanggung jawab, tab, status, handoff).
 6. Ikuti `05-execution-plan.md` — bangun fase per fase, jangan loncat.
+7. Baca `06-as-built.md` — **realita implementasi & deviasi** (sumber kebenaran final).
 
 ## Daftar file
 ```
@@ -29,7 +35,8 @@ docs/
 │   ├── 08-delivery.md
 │   ├── 09-finance.md
 │   └── 10-master-settings.md
-└── 05-execution-plan.md       urutan build bertahap
+├── 05-execution-plan.md       urutan build bertahap (✅ 12/12 selesai)
+└── 06-as-built.md             realita implementasi + deviasi (BERLAKU bila beda)
 ```
 
 ## Keputusan terkunci (ringkas)
@@ -39,7 +46,10 @@ docs/
 - Fulfillment: `fulfillment_type` (`sourcing`|`drop_in`).
 - **Carry-over antar leg DIIZINKAN** (dicatat di `load_items.trip_route_id`).
 - Luggage = master data; product wajib weight/dimensi → Load Planning.
-- Finance dipecah: receivable / payable / trip-expense.
+- Finance dipecah: receivable / payable / trip-expense; **payables = VIEW union**
+  (anti double-count by design — lihat as-built).
+- **Nilai turunan dihitung via VIEW**, tidak disimpan (subtotal/total/modal/profit).
+- **Multi-currency:** currency + fx_rate dibekukan per transaksi → IDR saat baca.
 - Menu & permission **dynamic dari DB**; permission MVP = UI only (RLS menyusul).
 - Menu: 5 grup, min 2 anak, max 2 level, lebih dalam = tabs.
 

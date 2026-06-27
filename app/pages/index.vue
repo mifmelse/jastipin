@@ -1,45 +1,133 @@
 <script setup lang="ts">
-import type { Database } from '~/types/database.types'
+type OrderRow = { status: string }
+type Ar = { paid_idr: number; outstanding_idr: number }
+type Payable = { amount_idr: number; status: string }
+type Pnl = { trip_id: string; code: string | null; name: string; revenue_idr: number; cost_idr: number; profit_idr: number }
+type Trip = { id: string; code: string | null; name: string; status: string; trip_routes?: { count: number }[] }
 
-const supabase = useSupabaseClient<Database>()
+const { items: trips } = useTrips()
+const { items: orders } = useOrders()
+const { items: ar } = useReceivables()
+const { items: payables } = usePayables()
+const { items: pnl } = useTripPnl()
 
-const { data: countries, error } = await useAsyncData('countries', async () => {
-  const { data, error } = await supabase
-    .from('countries')
-    .select('id, name, iso2, dial_code')
-    .order('name')
-  if (error) throw error
-  return data
+const sum = (arr: number[]) => arr.reduce((a, b) => a + Number(b || 0), 0)
+
+const activeTrips = computed(() => ((trips.value as Trip[]) ?? []).filter((t) => ['planned', 'ongoing'].includes(t.status)))
+const pendingOrders = computed(() => ((orders.value as OrderRow[]) ?? []).filter((o) => !['completed', 'cancelled', 'refunded'].includes(o.status)))
+
+const cashIn = computed(() => sum(((ar.value as Ar[]) ?? []).map((r) => r.paid_idr)))
+const cashOut = computed(() => sum(((payables.value as Payable[]) ?? []).filter((p) => p.status === 'paid').map((p) => p.amount_idr)))
+const netCash = computed(() => cashIn.value - cashOut.value)
+const arOutstanding = computed(() => sum(((ar.value as Ar[]) ?? []).map((r) => r.outstanding_idr)))
+const apUnpaid = computed(() => sum(((payables.value as Payable[]) ?? []).filter((p) => p.status === 'unpaid').map((p) => p.amount_idr)))
+
+const kpis = computed(() => [
+  { label: 'Trip aktif', value: String(activeTrips.value.length), to: '/operations/trips' },
+  { label: 'Order berjalan', value: String(pendingOrders.value.length), to: '/operations/orders' },
+  { label: 'Kas bersih', value: formatIDR(netCash.value), to: '/finance/reports', tone: netCash.value >= 0 ? 'text-success' : 'text-error' },
+  { label: 'Piutang (AR)', value: formatIDR(arOutstanding.value), to: '/finance/receivables', tone: 'text-warning' },
+  { label: 'Hutang (AP)', value: formatIDR(apUnpaid.value), to: '/finance/payables', tone: 'text-warning' },
+])
+
+// order pipeline breakdown (non-terminal statuses, in flow order)
+const orderFlow = ['draft', 'confirmed', 'paid', 'fulfilling', 'packed', 'in_transit', 'delivered']
+const orderByStatus = computed(() => {
+  const m = new Map<string, number>()
+  for (const o of pendingOrders.value) m.set(o.status, (m.get(o.status) ?? 0) + 1)
+  return orderFlow.map((s) => ({ status: s, count: m.get(s) ?? 0 })).filter((x) => x.count > 0)
 })
+
+const legCount = (t: Trip) => t.trip_routes?.[0]?.count ?? 0
+const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
 </script>
 
 <template>
   <div class="space-y-6">
     <div>
       <h1 class="text-xl font-semibold">Dashboard</h1>
-      <p class="text-sm text-gray-500">Fondasi siap — koneksi Supabase aktif.</p>
+      <p class="text-sm text-stone-500">Ringkasan operasi & keuangan jastip.</p>
     </div>
 
-    <UCard>
-      <template #header>
-        <div class="flex items-center justify-between">
-          <span class="font-medium">Countries</span>
-          <UBadge color="neutral" variant="soft">{{ countries?.length ?? 0 }}</UBadge>
-        </div>
-      </template>
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <NuxtLink
+        v-for="k in kpis"
+        :key="k.label"
+        :to="k.to"
+        class="rounded-lg border border-stone-200 dark:border-stone-800 p-3 hover:border-primary/50 transition-colors"
+      >
+        <p class="text-xs text-stone-500">{{ k.label }}</p>
+        <p class="text-lg font-semibold tabular-nums mt-1" :class="k.tone">{{ k.value }}</p>
+      </NuxtLink>
+    </div>
 
-      <p v-if="error" class="text-sm text-red-500">{{ error.message }}</p>
-
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-        <div
-          v-for="c in countries"
-          :key="c.id"
-          class="flex items-center gap-2 rounded border border-gray-200 dark:border-gray-800 px-2 py-1"
-        >
-          <span class="font-mono text-xs text-gray-400">{{ c.iso2 }}</span>
-          <span>{{ c.name }}</span>
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section class="space-y-2">
+        <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Order berjalan</h2>
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
+          <NuxtLink
+            v-for="s in orderByStatus"
+            :key="s.status"
+            to="/operations/orders"
+            class="flex items-center justify-between px-3 py-2 text-sm hover:bg-stone-50 dark:hover:bg-stone-900/50"
+          >
+            <UBadge :color="orderStatusColor(s.status)" variant="soft" class="capitalize">{{ s.status.replace('_', ' ') }}</UBadge>
+            <span class="tabular-nums font-medium">{{ s.count }}</span>
+          </NuxtLink>
+          <p v-if="!orderByStatus.length" class="px-3 py-6 text-center text-sm text-stone-400">Tidak ada order berjalan.</p>
         </div>
+      </section>
+
+      <section class="space-y-2">
+        <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Trip aktif</h2>
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
+          <NuxtLink
+            v-for="t in activeTrips"
+            :key="t.id"
+            :to="`/operations/trips/${t.id}`"
+            class="flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-stone-50 dark:hover:bg-stone-900/50"
+          >
+            <span class="min-w-0 truncate">
+              <span class="font-mono text-xs text-stone-400 mr-1">{{ t.code }}</span>{{ t.name }}
+            </span>
+            <span class="flex items-center gap-2 shrink-0">
+              <span class="text-xs text-stone-400">{{ legCount(t) }} leg</span>
+              <UBadge :color="tripStatusColor(t.status)" variant="soft" class="capitalize">{{ t.status }}</UBadge>
+            </span>
+          </NuxtLink>
+          <p v-if="!activeTrips.length" class="px-3 py-6 text-center text-sm text-stone-400">Tidak ada trip aktif.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="space-y-2">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Profit per trip</h2>
+        <NuxtLink to="/finance/reports" class="text-xs text-primary hover:underline">Lihat semua →</NuxtLink>
       </div>
-    </UCard>
+      <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+            <tr>
+              <th class="px-3 py-2 font-medium">Trip</th>
+              <th class="px-3 py-2 font-medium text-right">Revenue</th>
+              <th class="px-3 py-2 font-medium text-right">Biaya</th>
+              <th class="px-3 py-2 font-medium text-right">Profit</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+            <tr v-for="t in topTrips" :key="t.trip_id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
+              <td class="px-3 py-2"><span class="font-mono text-xs text-stone-400 mr-1">{{ t.code }}</span>{{ t.name }}</td>
+              <td class="px-3 py-2 text-right tabular-nums">{{ formatIDR(t.revenue_idr) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ formatIDR(t.cost_idr) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums font-medium" :class="t.profit_idr >= 0 ? 'text-success' : 'text-error'">{{ formatIDR(t.profit_idr) }}</td>
+            </tr>
+            <tr v-if="!topTrips.length">
+              <td colspan="4" class="px-3 py-6 text-center text-stone-400">Belum ada data.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </template>

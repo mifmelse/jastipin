@@ -5,6 +5,11 @@
 > status = text+check, money = numeric, weight = gram, dimensi = mm).
 > Tabel yang **sudah ada**: `continents`, `countries`, `profiles`.
 
+> ⚠️ **SUDAH DIBANGUN.** Dokumen ini = niat desain awal. Untuk realita final
+> (view sebagai sumber nilai turunan, multi-currency, payables = VIEW union, dst.)
+> lihat **`06-as-built.md`** — itu yang berlaku bila berbeda. Catatan `→ as-built`
+> ditandai di bawah pada bagian yang menyimpang.
+
 ## ERD ringkas (relasi utama)
 
 ```
@@ -149,8 +154,10 @@ Dokumentasi/kenangan (future-friendly).
 - shipping_address_id → customer_addresses (nullable)
 - status: `draft` | `confirmed` | `paid` | `fulfilling` | `packed` |
           `in_transit` | `delivered` | `completed` | `cancelled` | `refunded`
-- subtotal, fee, shipping_cost, total (numeric), currency
+- fee, shipping_cost (numeric, input), currency, **fx_rate** (kurs beku → IDR)
 - notes, created_by → profiles, created_at, updated_at
+- → **as-built:** subtotal & total **TIDAK** jadi kolom — view `order_summaries`
+  menghitung subtotal (Σ item) + total + total_idr.
 
 ### order_items
 - id, order_id → orders (cascade)
@@ -234,21 +241,24 @@ fisik belanja/terima ada di tabel sendiri agar order_items tetap bersih.
 ## E. Finance
 
 ### payments  (RECEIVABLE — uang masuk customer)
-- id, order_id → orders, amount (numeric), currency, method (text),
+- id, order_id → orders, amount (numeric), currency, **fx_rate**, method (text),
   paid_at, status: `pending` | `paid` | `refunded`, reference (nullable),
   recorded_by → profiles.
+- → **as-built:** piutang per order dihitung view `ar_per_order`
+  (total tagihan − Σ pembayaran paid = outstanding).
 
 ### payables  (PAYABLE — modal keluar)
-- id, source_type (text: `trip_expense` | `sourcing` | `shipping` | `other`),
-  source_id (uuid, polymorphic ref — atau FK eksplisit per tipe),
-  trip_id → trips (nullable), amount (numeric), currency,
-  fx_rate (numeric, nullable — kurs saat transaksi), incurred_at,
-  status: `unpaid` | `paid`, paid_at (nullable), recorded_by → profiles.
-
-> Trip Expenses (tabel `trip_expenses`) adalah sumber data utama payable kategori
-> operasional. Sourcing actual_price → payable kategori sourcing. Jaga agar tidak
-> double-count: tentukan satu sumber kebenaran (rekomendasi: payables sebagai
-> ledger, sisanya feed ke sini).
+> → **as-built (PENTING — beda dari spec):** `payables` BUKAN tabel, tapi **VIEW
+> union** yang menyatukan sumber biaya secara **live** (anti double-count by design):
+> - `sourcing` ← `sourcing_summaries.actual_total`
+> - `shipping` ← `orders.shipping_cost × fx_rate`
+> - `trip_expense` ← `trip_expenses.amount × fx_rate`
+> - `other` ← tabel **`manual_payables`** (satu-satunya payable yang disimpan)
+>
+> Kolom view: source_type, source_id, trip_id, amount_idr, currency, amount_src,
+> incurred_at, description, status, paid_at. Status bayar disimpan di overlay tipis
+> **`payable_settlements`** (unique per source_type+source_id; ada baris = paid).
+> Nilai tidak pernah disalin/basi; reports baca view → tidak mungkin double-count.
 
 ### Reports
 Tidak butuh tabel — query/aggregation di atas payments + payables + orders

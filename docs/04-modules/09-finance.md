@@ -21,6 +21,13 @@ jastip (sering nalangin) terkontrol.
 - Money: `numeric(14,2)` + currency ISO 4217. Lintas negara → simpan fx_rate.
 - Profit = receivable − (modal + ongkir + biaya trip teralokasi).
 
+> → **as-built:** dipilih mekanisme **VIEW union** (bukan tabel ledger yang menyalin
+> nilai). `payables` = view yang menyatukan sourcing (`sourcing_summaries.actual_total`),
+> ongkir (`orders.shipping_cost`), `trip_expenses`, dan `manual_payables`. Nilai selalu
+> live dari sumber → double-count **mustahil by design**. Status bayar via overlay
+> `payable_settlements`. Receivable via `payments` + view `ar_per_order`; profit per
+> trip via view `trip_pnl`. Detail: `06-as-built.md`.
+
 ## Handoff
 Menerima dari: Order (payment), Fulfillment (sourcing cost), Delivery (shipping),
 Trip (expenses).
