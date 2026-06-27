@@ -75,14 +75,14 @@ const linkClass = (path: string | null) =>
         />
 
         <button
-          class="flex flex-1 max-w-md items-center gap-2 h-9 rounded-lg border border-stone-200 dark:border-stone-800 px-3 text-sm text-stone-400 hover:border-stone-300 dark:hover:border-stone-700 transition-colors"
+          class="flex min-w-0 flex-1 max-w-md items-center gap-2 h-9 rounded-lg border border-stone-200 dark:border-stone-800 px-3 text-sm text-stone-400 hover:border-stone-300 dark:hover:border-stone-700 transition-colors"
           aria-label="Cari (Command-K)"
           @click="cmdkOpen = true"
         >
-          <UIcon name="i-lucide-search" class="size-4" />
-          <span>Cari halaman atau aksi…</span>
-          <UKbd class="ml-auto hidden sm:inline-flex" value="meta" />
-          <UKbd class="hidden sm:inline-flex" value="K" />
+          <UIcon name="i-lucide-search" class="size-4 shrink-0" />
+          <span class="truncate"><span class="sm:hidden">Cari…</span><span class="hidden sm:inline">Cari halaman atau aksi…</span></span>
+          <UKbd class="ml-auto hidden sm:inline-flex shrink-0" value="meta" />
+          <UKbd class="hidden sm:inline-flex shrink-0" value="K" />
         </button>
 
         <div class="flex-1" />
