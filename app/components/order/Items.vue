@@ -39,6 +39,8 @@ const unitOptions = computed(() => [
 const itemLabel = (i: ItemRow) => i.products?.name ?? i.item_name ?? '(item)'
 // product items show the catalog photo; free-text items their own upload
 const itemPhoto = (i: ItemRow) => (i.product_id ? i.products?.image_url : i.image_url) ?? null
+// drop-in = customer's own goods (no purchase cost) → no item price; revenue is the order-level fee
+const priced = (i: ItemRow) => i.fulfillment_type === 'sourcing'
 const lineTotal = (i: ItemRow) => i.qty * Number(i.requested_price ?? 0)
 
 // Berat per-unit (free-text input, atau dari produk) × qty = total.
@@ -131,8 +133,8 @@ async function save() {
       fulfillment_type: form.fulfillment_type,
       qty: Number(form.qty) || 1,
       unit_id: toNullable(form.unit_id),
-      requested_price: num(form.requested_price),
-      actual_price: num(form.actual_price),
+      requested_price: form.fulfillment_type === 'sourcing' ? num(form.requested_price) : null,
+      actual_price: form.fulfillment_type === 'sourcing' ? num(form.actual_price) : null,
       // product items inherit weight/dims from the catalog — only free-text items carry their own
       weight_g: mode.value === 'free' ? num(form.weight_g) : null,
       length_mm: mode.value === 'free' ? num(form.length_mm) : null,
@@ -209,8 +211,8 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
             <td class="px-3 py-2 text-right tabular-nums">
               {{ i.qty }}<span v-if="i.units" class="text-stone-400"> {{ i.units.symbol ?? i.units.name }}</span>
             </td>
-            <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ money(i.requested_price) }}</td>
-            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">{{ money(lineTotal(i)) }}</td>
+            <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ priced(i) ? money(i.requested_price) : '—' }}</td>
+            <td class="px-3 py-2 text-right tabular-nums" :class="priced(i) ? 'font-semibold text-primary' : 'text-stone-400'">{{ priced(i) ? money(lineTotal(i)) : '—' }}</td>
             <td class="px-3 py-2">
               <UBadge :color="itemStatusColor(i.status)" variant="soft" class="capitalize">
                 {{ i.status.replace('_', ' ') }}
@@ -247,8 +249,11 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
           </UBadge>
         </div>
         <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
-          <span class="text-xs text-stone-500 truncate">{{ i.qty }}<span v-if="i.units"> {{ i.units.symbol ?? i.units.name }}</span> × {{ money(i.requested_price) }}</span>
-          <span class="font-semibold text-primary tabular-nums shrink-0">{{ money(lineTotal(i)) }}</span>
+          <span class="text-xs text-stone-500 truncate">
+            {{ i.qty }}<span v-if="i.units"> {{ i.units.symbol ?? i.units.name }}</span><template v-if="priced(i)"> × {{ money(i.requested_price) }}</template><template v-else> · drop-in (tanpa biaya)</template>
+          </span>
+          <span v-if="priced(i)" class="font-semibold text-primary tabular-nums shrink-0">{{ money(lineTotal(i)) }}</span>
+          <span v-else class="text-stone-400 tabular-nums shrink-0">—</span>
         </div>
       </div>
       <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada item.</p>
@@ -296,10 +301,10 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
             <UFormField label="Unit">
               <USelect v-model="form.unit_id" :items="unitOptions" class="w-full" />
             </UFormField>
-            <UFormField :label="`Harga diminta (${currency})`" :help="mode === 'product' ? 'Auto dari produk (bisa diubah)' : undefined">
+            <UFormField v-if="form.fulfillment_type === 'sourcing'" :label="`Harga diminta (${currency})`" :help="mode === 'product' ? 'Auto dari produk (bisa diubah)' : undefined">
               <UInput v-model.number="form.requested_price" type="number" class="w-full" />
             </UFormField>
-            <UFormField :label="`Harga aktual (${currency})`" help="Yang benar-benar dibayar shopper.">
+            <UFormField v-if="form.fulfillment_type === 'sourcing'" :label="`Harga aktual (${currency})`" help="Yang benar-benar dibayar shopper.">
               <UInput v-model.number="form.actual_price" type="number" class="w-full" />
             </UFormField>
             <UFormField v-if="mode === 'free'" label="Berat / unit (gram)" :help="`Total ${weightTotal.toLocaleString('id-ID')} g`">

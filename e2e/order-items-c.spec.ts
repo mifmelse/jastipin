@@ -75,3 +75,20 @@ test('substitution from sourcing shows a "diganti" badge on the order item', asy
 
   await a.from('orders').delete().eq('id', o!.id)
 })
+
+test('drop-in item shows no price (customer-owned goods)', async ({ page }) => {
+  const a = admin()
+  const { data: o } = await a.from('orders').insert({ customer_id: custId, trip_route_id: routeId, currency: 'IDR', fx_rate: 1 }).select('id').single()
+  await a.from('order_items').insert({
+    order_id: o!.id, item_name: 'E2E Dropin Barang', fulfillment_type: 'drop_in', qty: 2, status: 'pending',
+  })
+
+  await gotoReady(page, `/operations/orders/${o!.id}`)
+  await page.getByRole('tab', { name: 'Items' }).click()
+  const row = page.getByRole('row', { name: /E2E Dropin Barang/ })
+  await expect(row).toContainText('Drop-in')
+  // Harga + Subtotal cells render as "—" (no item cost for drop-in)
+  await expect(row.getByRole('cell', { name: '—', exact: true })).toHaveCount(2)
+
+  await a.from('orders').delete().eq('id', o!.id)
+})
