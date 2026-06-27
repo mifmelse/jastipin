@@ -22,7 +22,7 @@ const user = useSupabaseUser()
 const toast = useToast()
 
 const legOptions = computed(() => [
-  { label: 'Semua leg', value: NONE },
+  { label: 'Semua route', value: NONE },
   ...(legs.value ?? []).map((l) => ({ label: legLabel(l as LegEmbed), value: l.id })),
 ])
 const currencyOptions = computed(() => (currencies.value ?? []).map((c) => ({ label: c.code, value: c.code })))
@@ -109,7 +109,7 @@ async function submit() {
 <template>
   <div class="space-y-3">
     <div class="flex items-center gap-2">
-      <span class="text-sm text-stone-500">Leg</span>
+      <span class="text-sm text-stone-500">Route</span>
       <USelect v-model="filterLeg" :items="legOptions" class="w-72" />
     </div>
 

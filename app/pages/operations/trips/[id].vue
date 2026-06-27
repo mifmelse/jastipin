@@ -5,7 +5,7 @@ const { trip, status } = useTrip(id)
 
 const tabs = [
   { label: 'Overview', slot: 'overview' as const, icon: 'i-lucide-info' },
-  { label: 'Routes/Legs', slot: 'routes' as const, icon: 'i-lucide-route' },
+  { label: 'Routes', slot: 'routes' as const, icon: 'i-lucide-route' },
   { label: 'Itinerary', slot: 'itinerary' as const, icon: 'i-lucide-calendar-days' },
   { label: 'Bookings', slot: 'bookings' as const, icon: 'i-lucide-ticket' },
   { label: 'Expenses', slot: 'expenses' as const, icon: 'i-lucide-receipt' },

@@ -28,7 +28,7 @@ async function save() {
   if (trip.value && form.type !== trip.value.type) {
     const ok = await useConfirm().confirm({
       title: 'Ganti type trip',
-      description: 'Mengganti type akan menghapus semua leg/route trip ini. Lanjut?',
+      description: 'Mengganti type akan menghapus semua route trip ini. Lanjut?',
       confirmLabel: 'Ganti & reset',
     })
     if (!ok) return

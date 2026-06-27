@@ -88,7 +88,7 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
               <span class="font-mono text-xs text-stone-400 mr-1">{{ t.code }}</span>{{ t.name }}
             </span>
             <span class="flex items-center gap-2 shrink-0">
-              <span class="text-xs text-stone-400">{{ legCount(t) }} leg</span>
+              <span class="text-xs text-stone-400">{{ legCount(t) }} route</span>
               <UBadge :color="tripStatusColor(t.status)" variant="soft" class="capitalize">{{ t.status }}</UBadge>
             </span>
           </NuxtLink>

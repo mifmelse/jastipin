@@ -17,7 +17,7 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <PageHeader title="Load Planning" subtitle="Muat barang ke koper dengan simulasi berat & volume per leg." icon="i-lucide-luggage">
+    <PageHeader title="Load Planning" subtitle="Muat barang ke koper dengan simulasi berat & volume per route." icon="i-lucide-luggage">
       <template #actions>
         <div class="flex items-center gap-2">
           <span class="text-sm text-stone-500">Trip</span>

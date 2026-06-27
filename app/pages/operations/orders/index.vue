@@ -88,7 +88,7 @@ watch(legs, (list) => {
 
 <template>
   <div class="space-y-4">
-    <PageHeader title="Orders" subtitle="Transaksi inti — 1 customer untuk 1 leg." icon="i-lucide-shopping-cart">
+    <PageHeader title="Orders" subtitle="Transaksi inti — 1 customer untuk 1 route." icon="i-lucide-shopping-cart">
       <template #actions>
         <UButton v-if="can('orders.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
@@ -100,7 +100,7 @@ watch(legs, (list) => {
           <tr>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Code</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
-            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Leg</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Route</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Items</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Total</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
@@ -170,7 +170,7 @@ watch(legs, (list) => {
           <UFormField label="Customer" required>
             <USelect v-model="form.customer_id" :items="customerOptions" class="w-full" placeholder="Pilih customer…" />
           </UFormField>
-          <UFormField label="Leg (trip route)" required help="Order menempel ke leg, bukan trip.">
+          <UFormField label="Route" required help="Order menempel ke route, bukan trip.">
             <USelect v-model="form.trip_route_id" :items="legOptions" class="w-full" placeholder="Pilih leg…" />
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

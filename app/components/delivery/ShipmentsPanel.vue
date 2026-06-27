@@ -57,7 +57,7 @@ async function save() {
       })
     } else {
       const legId = orderLeg.value.get(form.order_id)
-      if (!legId) throw new Error('Order tidak punya leg pengantaran.')
+      if (!legId) throw new Error('Order tidak punya route pengantaran.')
       await create({
         order_id: form.order_id,
         trip_route_id: legId,
@@ -95,7 +95,7 @@ async function onDelete(s: Shipment) {
           <tr>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Order</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
-            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Leg</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Route</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Courier</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Resi</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
@@ -164,7 +164,7 @@ async function onDelete(s: Shipment) {
               <USelect v-model="form.status" :items="SHIPMENT_STATUS_OPTIONS" class="w-full" />
             </UFormField>
           </div>
-          <p v-if="!editingId" class="text-xs text-stone-400">Leg pengantaran otomatis dari leg order.</p>
+          <p v-if="!editingId" class="text-xs text-stone-400">Route pengantaran otomatis dari route order.</p>
         </div>
       </template>
       <template #footer>

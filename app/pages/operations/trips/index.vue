@@ -43,7 +43,7 @@ async function save() {
   }
 }
 async function onDelete(row: TripRow) {
-  if (!(await useConfirm().confirm({ title: 'Hapus trip', description: `Hapus "${row.name}"? Semua leg/booking/expense-nya ikut terhapus.` }))) return
+  if (!(await useConfirm().confirm({ title: 'Hapus trip', description: `Hapus "${row.name}"? Semua route/booking/expense-nya ikut terhapus.` }))) return
   try {
     await remove(row.id)
   } catch (e) {
@@ -68,7 +68,7 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Code</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Type</th>
-            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Legs</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Routes</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Traveler</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
             <th class="px-3 py-2.5 w-16"></th>
@@ -119,7 +119,7 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
         </div>
         <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
           <span class="text-xs text-stone-500 truncate">{{ row.type }}</span>
-          <span class="font-medium tabular-nums shrink-0">{{ legCount(row) }} legs</span>
+          <span class="font-medium tabular-nums shrink-0">{{ legCount(row) }} routes</span>
         </div>
       </button>
       <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada trip.</p>

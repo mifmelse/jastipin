@@ -15,9 +15,9 @@ const isRound = computed(() => props.tripType === 'round')
 const hint = computed(
   () =>
     ({
-      single: 'Single: tepat 1 leg (A → B).',
-      round: 'Round: isi leg pergi (A → B); leg balik (B → A) dibuat otomatis.',
-      multi: 'Multi: tambah leg sepuasnya; origin tiap leg otomatis = destinasi leg sebelumnya.',
+      single: 'Single: tepat 1 route (A → B).',
+      round: 'Round: isi route pergi (A → B); route balik (B → A) dibuat otomatis.',
+      multi: 'Multi: tambah route sepuasnya; origin tiap route otomatis = destinasi route sebelumnya.',
     })[props.tripType] ?? '',
 )
 
@@ -72,7 +72,7 @@ async function save() {
   }
 }
 async function onDelete(row: { id: string; sequence: number }) {
-  if (!(await useConfirm().confirm({ title: 'Hapus leg', description: `Hapus leg #${row.sequence}?` }))) return
+  if (!(await useConfirm().confirm({ title: 'Hapus route', description: `Hapus route #${row.sequence}?` }))) return
   try {
     await remove(row.id)
   } catch (e) {
@@ -90,7 +90,7 @@ const valid = computed(
     <div class="flex items-center justify-between gap-3">
       <p class="text-sm text-stone-500">{{ hint }}</p>
       <UButton v-if="can('trips.write')" icon="i-lucide-plus" :disabled="!canAdd" @click="openAdd">
-        {{ isRound ? 'Tambah rute' : 'Tambah leg' }}
+        Tambah route
       </UButton>
     </div>
 
@@ -118,7 +118,7 @@ const valid = computed(
             </td>
           </tr>
           <tr v-if="!(items?.length)">
-            <td colspan="4" class="px-3 py-6 text-center text-stone-400">Belum ada leg.</td>
+            <td colspan="4" class="px-3 py-6 text-center text-stone-400">Belum ada route.</td>
           </tr>
         </tbody>
       </table>
@@ -141,7 +141,7 @@ const valid = computed(
           <span class="font-medium tabular-nums shrink-0">{{ row.departure_date ?? '—' }}</span>
         </div>
       </div>
-      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada leg.</p>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada route.</p>
     </div>
 
     <UModal v-model:open="open" :title="isRound ? 'Tambah Rute (pergi–balik)' : 'Tambah Leg'">

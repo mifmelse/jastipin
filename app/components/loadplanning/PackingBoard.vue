@@ -169,7 +169,7 @@ async function unpack(li: LoadItem) {
           <UFormField label="Barang (siap di gudang)" required>
             <USelect v-model="form.order_item_id" :items="packableOptions" class="w-full" placeholder="Pilih barang…" />
           </UFormField>
-          <UFormField label="Dibawa di leg" required help="Carry-over: pilih leg mana barang ini diangkut.">
+          <UFormField label="Dibawa di route" required help="Carry-over: pilih route mana barang ini diangkut.">
             <USelect v-model="form.trip_route_id" :items="legOptions" class="w-full" />
           </UFormField>
           <p v-if="!packableOptions.length" class="text-xs text-stone-400">
