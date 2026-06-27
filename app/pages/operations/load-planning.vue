@@ -32,7 +32,7 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <PageHeader title="Load Planning" subtitle="Muat barang ke wadah angkut dengan simulasi berat & volume per route." icon="i-lucide-luggage">
+    <PageHeader title="Load Planning" subtitle="Muat barang ke luggage dengan simulasi berat & volume per route." icon="i-lucide-luggage">
       <template #actions>
         <div class="flex items-center gap-2">
           <USelect v-model="selected" :items="tripOptions" class="w-56" />
