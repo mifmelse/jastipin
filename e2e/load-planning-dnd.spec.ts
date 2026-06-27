@@ -37,8 +37,8 @@ test('load planning: drag a queue card into a luggage packs it', async ({ page }
   await page.getByRole('option', { name: /→/ }).first().click()
   await expect(page.getByRole('listbox')).toHaveCount(0)
 
-  const queueCard = page.locator('.w-64').getByText('E2E Dnd Item')
-  const dropZone = page.locator('.w-72', { hasText: LUG })
+  const queueCard = page.locator('.lp-queue').getByText('E2E Dnd Item')
+  const dropZone = page.locator('.lp-luggage', { hasText: LUG })
   await expect(queueCard).toBeVisible()
 
   const s = await queueCard.boundingBox()
@@ -49,8 +49,8 @@ test('load planning: drag a queue card into a luggage packs it', async ({ page }
   await page.mouse.move(s.x + s.width / 2, s.y + s.height / 2)
   await page.mouse.down()
   await page.mouse.move(s.x + s.width / 2, s.y + s.height / 2 + 8, { steps: 4 })
-  await page.mouse.move(d.x + d.width / 2, d.y + 90, { steps: 12 })
-  await page.mouse.move(d.x + d.width / 2, d.y + 100, { steps: 6 })
+  await page.mouse.move(d.x + d.width / 2, d.y + d.height / 2, { steps: 14 })
+  await page.mouse.move(d.x + d.width / 2, d.y + d.height / 2 + 4, { steps: 6 })
   await page.mouse.up()
   await packed
 

@@ -22,6 +22,7 @@ type OrderItemEmbed = {
 type LoadItem = { id: string; qty: number; trip_route_id: string; order_items?: OrderItemEmbed | null }
 type Luggage = Database['public']['Tables']['luggages']['Row'] & {
   luggage_types?: { name: string; max_weight_g: number | null; tare_weight_g: number | null } | null
+  assigned?: { full_name: string | null } | null
   load_items?: LoadItem[]
 }
 type Packable = {
@@ -116,6 +117,18 @@ watchEffect(() => {
 
 const dragEnabled = computed(() => can('load_planning.write') && !!props.routeId)
 
+// Group luggages by traveler so a board with 16+ bags stays navigable.
+// Unassigned bags go last.
+const luggageGroups = computed(() => {
+  const groups = new Map<string, { key: string; travelerName: string; luggages: Luggage[] }>()
+  for (const l of (luggages.value as Luggage[]) ?? []) {
+    const key = l.assigned_traveler ?? '__none__'
+    if (!groups.has(key)) groups.set(key, { key, travelerName: l.assigned?.full_name ?? 'Belum di-assign', luggages: [] })
+    groups.get(key)!.luggages.push(l)
+  }
+  return [...groups.values()].sort((a, b) => (a.key === '__none__' ? 1 : b.key === '__none__' ? -1 : a.travelerName.localeCompare(b.travelerName)))
+})
+
 function existingInLuggage(luggageId: string, orderItemId: string): LoadItem | undefined {
   const l = ((luggages.value as Luggage[]) ?? []).find((x) => x.id === luggageId)
   return l ? routeItems(l).find((li) => li.order_items?.id === orderItemId) : undefined
@@ -183,9 +196,9 @@ async function submit() {
         {{ pool.length }} barang siap dimuat di route ini. Seret kartu ke koper (pindah semua), atur jumlah dengan −/+.
       </p>
 
-      <div class="flex gap-3 overflow-x-auto pb-2 items-start">
-        <!-- queue -->
-        <div class="w-64 shrink-0 rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/40">
+      <div class="flex gap-4 items-start">
+        <!-- queue: sticky so it stays reachable while scrolling many luggages -->
+        <div class="lp-queue w-60 shrink-0 sticky top-4 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/40">
           <div class="p-3 border-b border-stone-100 dark:border-stone-800">
             <p class="font-medium text-sm">Barang siap (queue)</p>
             <p class="text-xs text-stone-400">in_warehouse · route ini</p>
@@ -210,12 +223,19 @@ async function submit() {
           <p v-if="!pool.length" class="text-xs text-stone-300 dark:text-stone-700 text-center pb-3">kosong</p>
         </div>
 
-        <div v-if="!(luggages?.length)" class="text-sm text-stone-400 text-center py-10 px-6 border border-dashed border-stone-200 dark:border-stone-800 rounded-lg">
-          Belum ada luggage. Buat dulu di tab <span class="font-medium">Luggage</span>.
-        </div>
-
-        <!-- luggages -->
-        <div v-for="l in (luggages as Luggage[])" :key="l.id" class="w-72 shrink-0 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
+        <!-- luggages grouped by traveler, wrapping grid -->
+        <div class="flex-1 min-w-0">
+          <div v-if="!(luggages?.length)" class="text-sm text-stone-400 text-center py-10 px-6 border border-dashed border-stone-200 dark:border-stone-800 rounded-lg">
+            Belum ada luggage. Buat dulu di tab <span class="font-medium">Luggage</span>.
+          </div>
+          <div v-else class="space-y-5">
+            <div v-for="g in luggageGroups" :key="g.key">
+              <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <UIcon name="i-lucide-user" class="size-3.5" /> {{ g.travelerName }}
+                <span class="font-normal text-stone-400 normal-case">· {{ g.luggages.length }} koper</span>
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div v-for="l in g.luggages" :key="l.id" class="lp-luggage rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
           <div class="p-3 border-b border-stone-100 dark:border-stone-800 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <p class="font-medium text-sm">{{ l.label }}</p>
@@ -263,6 +283,10 @@ async function submit() {
           <div class="p-2 pt-0">
             <p v-if="!(byLuggage[l.id]?.length)" class="text-xs text-stone-300 dark:text-stone-700 text-center py-2">tarik barang ke sini</p>
             <UButton v-if="can('load_planning.write')" size="xs" color="neutral" variant="soft" block icon="i-lucide-plus" @click="openAdd(l)">Tambah barang</UButton>
+          </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

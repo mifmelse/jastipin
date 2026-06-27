@@ -67,7 +67,7 @@ test('load planning: create luggage, pack item, weight + status + simulation', a
   await packed
 
   // card shows the item + weight = 4kg contents + 1kg tare = 5 kg; item left the queue
-  const card = page.locator('.w-72', { hasText: LUG })
+  const card = page.locator('.lp-luggage', { hasText: LUG })
   await expect(card).toContainText('E2E Lp Item')
   await expect(card).toContainText('5 kg')
   await expect(page.getByText('0 barang siap dimuat di route ini.')).toBeVisible() // status mirrored → packed

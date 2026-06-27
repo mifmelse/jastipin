@@ -52,10 +52,10 @@ test('packing splits qty across luggages; packed only when fully placed', async 
   await expect(page.getByRole('listbox')).toHaveCount(0)
 
   // queue shows the 3-pcs item
-  await expect(page.locator('.w-64')).toContainText('×3')
+  await expect(page.locator('.lp-queue')).toContainText('×3')
 
   // place ALL 3 into Koper A (tap)
-  const cardA = page.locator('.w-72', { hasText: LUGA })
+  const cardA = page.locator('.lp-luggage', { hasText: LUGA })
   await cardA.getByRole('button', { name: 'Tambah barang' }).click()
   const d = page.getByRole('dialog')
   await d.getByRole('combobox').first().click()
@@ -68,6 +68,6 @@ test('packing splits qty across luggages; packed only when fully placed', async 
   // take 2 units back via the − stepper → partial again
   await cardA.getByRole('button', { name: 'Kurangi' }).click()
   await cardA.getByRole('button', { name: 'Kurangi' }).click()
-  await expect(page.locator('.w-64')).toContainText('×2') // 2 units back in queue
+  await expect(page.locator('.lp-queue')).toContainText('×2') // 2 units back in queue
   await expect.poll(status).toBe('in_warehouse') // no longer fully packed
 })
