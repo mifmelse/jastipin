@@ -3,7 +3,7 @@ import type { Database } from '~/types/database.types'
 
 type SourcingRec = { is_substitute: boolean; substitute_note: string | null }
 type ItemRow = Database['public']['Tables']['order_items']['Row'] & {
-  products?: { name: string; base_price: number | null; weight_g: number | null; length_mm: number | null; width_mm: number | null; height_mm: number | null } | null
+  products?: { name: string; image_url: string | null; base_price: number | null; weight_g: number | null; length_mm: number | null; width_mm: number | null; height_mm: number | null } | null
   units?: { name: string; symbol: string | null } | null
   // unique FK → supabase may embed as an object or a single-element array
   sourcing_records?: SourcingRec | SourcingRec[] | null
@@ -37,6 +37,8 @@ const unitOptions = computed(() => [
 ])
 
 const itemLabel = (i: ItemRow) => i.products?.name ?? i.item_name ?? '(item)'
+// product items show the catalog photo; free-text items their own upload
+const itemPhoto = (i: ItemRow) => (i.product_id ? i.products?.image_url : i.image_url) ?? null
 const lineTotal = (i: ItemRow) => i.qty * Number(i.requested_price ?? 0)
 
 // Berat per-unit (free-text input, atau dari produk) × qty = total.
@@ -138,7 +140,8 @@ async function save() {
       height_mm: mode.value === 'free' ? num(form.height_mm) : null,
       status: form.status,
       notes: form.notes.trim() || null,
-      image_url: form.image_url || null,
+      // product items show the catalog photo — only free-text items carry their own
+      image_url: mode.value === 'free' ? form.image_url || null : null,
     }
     if (editingId.value) await update(editingId.value, payload)
     else await create(payload)
@@ -187,7 +190,7 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
           <tr v-for="i in (items as ItemRow[]) ?? []" :key="i.id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
             <td class="px-3 py-2">
               <div class="flex items-center gap-2">
-                <MediaThumb :url="i.image_url" size="size-9" icon="i-lucide-box" />
+                <MediaThumb :url="itemPhoto(i)" size="size-9" icon="i-lucide-box" />
                 <div class="min-w-0">
                   <div class="font-medium flex items-center gap-1.5">
                     {{ itemLabel(i) }}
@@ -324,8 +327,11 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
           <UFormField label="Notes">
             <UInput v-model="form.notes" class="w-full" />
           </UFormField>
-          <UFormField label="Foto item" help="Referensi biar shopper kenal barangnya.">
+          <UFormField v-if="mode === 'free'" label="Foto item" help="Referensi biar shopper kenal barangnya.">
             <FileUpload v-model="form.image_url" folder="order-items" accept="image/*" />
+          </UFormField>
+          <UFormField v-else label="Foto item" help="Dari master produk.">
+            <MediaThumb :url="selectedProduct?.image_url" size="size-16" icon="i-lucide-box" />
           </UFormField>
         </div>
       </template>

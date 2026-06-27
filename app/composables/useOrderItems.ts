@@ -9,7 +9,7 @@ export function useOrderItems(orderId: string) {
   const { data: items, refresh, status } = useAsyncData(`order-items-${orderId}`, async () => {
     const { data, error } = await supabase
       .from('order_items')
-      .select('*, products(name, base_price, weight_g, length_mm, width_mm, height_mm), units(name, symbol), sourcing_records(is_substitute, substitute_note)')
+      .select('*, products(name, image_url, base_price, weight_g, length_mm, width_mm, height_mm), units(name, symbol), sourcing_records(is_substitute, substitute_note)')
       .eq('order_id', orderId)
       .order('created_at')
     if (error) throw error
