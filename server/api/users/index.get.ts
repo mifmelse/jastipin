@@ -21,6 +21,7 @@ export default defineEventHandler(async (event) => {
       full_name: p?.full_name ?? null,
       role: p?.role ?? null,
       user_type: p?.user_type ?? null,
+      avatar_url: p?.avatar_url ?? null,
     }
   })
 })

@@ -7,6 +7,7 @@ export interface UserRow {
   full_name: string | null
   role: string | null
   user_type: string | null
+  avatar_url: string | null
 }
 
 export interface UserCreate {
@@ -15,6 +16,7 @@ export interface UserCreate {
   full_name?: string
   role?: string
   user_type?: string
+  avatar_url?: string
 }
 
 export function useUsers() {
@@ -29,7 +31,7 @@ export function useUsers() {
   }
   async function update(
     id: string,
-    payload: { full_name?: string; role?: string; user_type?: string | null },
+    payload: { full_name?: string; role?: string; user_type?: string | null; avatar_url?: string | null },
   ) {
     await $fetch(`/api/users/${id}`, { method: 'PATCH', body: payload })
     await refresh()

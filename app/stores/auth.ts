@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const { data: prof } = await supabase
       .from('profiles')
-      .select('id, full_name, role, user_type, created_at')
+      .select('id, full_name, role, user_type, avatar_url, created_at')
       .eq('id', id)
       .single()
     profile.value = prof

@@ -43,7 +43,7 @@
   bukan buka tab baru. Support **multiple media**. Dipakai semua: foto produk/brand/customer/item,
   struk sourcing, bukti delivery, moments.
 
-**A3. Foto end-to-end** *(migration: brands, order_items, profiles, payments)*
+**A3. Foto end-to-end** *(migration: brands, order_items, profiles, payments)* — ✅ **SELESAI**
 - Wire `FileUpload` + thumbnail + MediaViewer ke: **Users** (avatar; via server route + auth
   store + topbar), **Brands**, **Products** (kolom udah ada), **Customers** (kolom udah ada),
   **Order item titipan** (opsional, buat shopper kenalin barang), **Payment proof**.
