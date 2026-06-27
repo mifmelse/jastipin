@@ -15,6 +15,9 @@ type LoadItem = {
     qty: number
     item_name: string | null
     weight_g: number | null
+    length_mm: number | null
+    width_mm: number | null
+    height_mm: number | null
     products?: { name: string } | null
     orders?: { code: string | null; customers?: { name: string } | null } | null
   } | null
@@ -28,10 +31,13 @@ type Packable = {
   item_name: string | null
   qty: number
   weight_g: number | null
+  length_mm: number | null
+  width_mm: number | null
+  height_mm: number | null
   products?: { name: string } | null
   orders?: { code: string | null; trip_route_id: string; customers?: { name: string } | null } | null
 }
-type Card = { key: string; orderItemId: string; loadItemId: string | null; title: string; sub: string }
+type Card = { key: string; orderItemId: string; loadItemId: string | null; title: string; sub: string; meta: string }
 type DragChange = {
   added?: { element: Card }
   removed?: { element: Card }
@@ -66,6 +72,16 @@ const byLuggage = reactive<Record<string, Card[]>>({})
 const itemTitle = (oi: Packable | NonNullable<LoadItem['order_items']>) =>
   `${oi.products?.name ?? oi.item_name ?? '(item)'} ×${oi.qty}`
 
+// Total weight (g) and volume (cm³) for the whole line (× qty).
+function volCm3(l: number | null, w: number | null, h: number | null, qty: number) {
+  if (!l || !w || !h) return null
+  return ((Number(l) * Number(w) * Number(h)) / 1000) * qty
+}
+function metaStr(weightG: number, vol: number | null) {
+  const wlabel = `${Math.round(weightG).toLocaleString('id-ID')} g`
+  return vol ? `${wlabel} · ${Math.round(vol).toLocaleString('id-ID')} cm³` : wlabel
+}
+
 watchEffect(() => {
   pool.value = routePackable.value.map((p) => ({
     key: `p-${p.id}`,
@@ -73,15 +89,21 @@ watchEffect(() => {
     loadItemId: null,
     title: itemTitle(p),
     sub: `${p.orders?.code ?? ''} · ${p.orders?.customers?.name ?? ''}`,
+    meta: metaStr(Number(p.weight_g ?? 0) * p.qty, volCm3(p.length_mm, p.width_mm, p.height_mm, p.qty)),
   }))
   for (const l of (luggages.value as Luggage[]) ?? []) {
-    byLuggage[l.id] = routeItems(l).map((li) => ({
-      key: `li-${li.id}`,
-      orderItemId: li.order_items?.id ?? '',
-      loadItemId: li.id,
-      title: li.order_items ? itemTitle(li.order_items) : '(item)',
-      sub: `${li.order_items?.orders?.code ?? ''} · ${li.order_items?.orders?.customers?.name ?? ''}`,
-    }))
+    byLuggage[l.id] = routeItems(l).map((li) => {
+      const oi = li.order_items
+      const qty = Number(oi?.qty ?? 1)
+      return {
+        key: `li-${li.id}`,
+        orderItemId: oi?.id ?? '',
+        loadItemId: li.id,
+        title: oi ? itemTitle(oi) : '(item)',
+        sub: `${oi?.orders?.code ?? ''} · ${oi?.orders?.customers?.name ?? ''}`,
+        meta: metaStr(Number(oi?.weight_g ?? 0) * qty, volCm3(oi?.length_mm ?? null, oi?.width_mm ?? null, oi?.height_mm ?? null, qty)),
+      }
+    })
   }
 })
 
@@ -182,6 +204,7 @@ async function submit() {
               <div class="rounded-md border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing">
                 <p class="truncate">{{ element.title }}</p>
                 <p class="text-xs text-stone-400 truncate">{{ element.sub }}</p>
+                <p class="text-xs text-stone-500 tabular-nums">{{ element.meta }}</p>
               </div>
             </template>
           </draggable>
@@ -229,6 +252,7 @@ async function submit() {
                 <div class="min-w-0">
                   <p class="truncate">{{ element.title }}</p>
                   <p class="text-xs text-stone-400 truncate">{{ element.sub }}</p>
+                  <p class="text-xs text-stone-500 tabular-nums">{{ element.meta }}</p>
                 </div>
                 <UButton v-if="can('load_planning.write')" size="xs" color="error" variant="ghost" icon="i-lucide-x" aria-label="Keluarkan" @click="unpack(element.loadItemId)" />
               </div>
