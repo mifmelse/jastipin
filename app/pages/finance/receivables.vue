@@ -160,7 +160,7 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
               <UInput v-model.number="form.amount" type="number" class="w-full" />
             </UFormField>
             <UFormField label="Metode">
-              <UInput v-model="form.method" class="w-full" placeholder="transfer / cash / QRIS" />
+              <MasterSelect v-model="form.method" table="payment_methods" />
             </UFormField>
             <UFormField label="Currency">
               <USelect v-model="form.currency" :items="currencyOptions" class="w-full" />

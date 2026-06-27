@@ -112,9 +112,11 @@ test('trip slice B: bookings, expenses, itinerary, moments', async ({ page }) =>
   await page.getByRole('tab', { name: 'Expenses' }).click()
   await page.getByRole('button', { name: 'Tambah expense' }).click()
   let d = page.getByRole('dialog')
-  await d.locator('input[type="text"]').first().fill('Transport')
+  await d.getByRole('combobox').first().click() // category (master select)
+  await page.getByRole('option', { name: 'Transport', exact: true }).click()
+  await expect(page.getByRole('listbox')).toHaveCount(0)
   await d.locator('input[type="number"]').first().fill('1000') // amount
-  await d.getByRole('combobox').first().click() // currency
+  await d.getByRole('combobox').nth(1).click() // currency
   await page.getByRole('option', { name: 'JPY', exact: true }).click()
   await d.locator('input[type="number"]').nth(1).fill('110') // fx_rate (foreign → shown)
   await page.getByRole('button', { name: 'Simpan' }).click()

@@ -151,7 +151,7 @@ const valid = computed(() => form.category.trim() && Number(form.amount) > 0)
         <div class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Category" required>
-              <UInput v-model="form.category" class="w-full" placeholder="transport, makan, …" />
+              <MasterSelect v-model="form.category" table="expense_categories" />
             </UFormField>
             <UFormField label="Spent at">
               <UInput v-model="form.spent_at" type="date" class="w-full" />

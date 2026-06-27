@@ -158,7 +158,7 @@ async function submit() {
               <UInput v-model="form.received_at" type="date" class="w-full" />
             </UFormField>
             <UFormField label="Kurir asal">
-              <UInput v-model="form.courier_from" class="w-full" placeholder="mis. JNE / GoSend" />
+              <MasterSelect v-model="form.courier_from" table="couriers" />
             </UFormField>
             <UFormField label="Kondisi">
               <USelect v-model="form.condition" :items="CONDITION_OPTIONS" class="w-full" />

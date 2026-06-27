@@ -155,7 +155,7 @@ async function onDelete(s: Shipment) {
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Courier">
-              <UInput v-model="form.courier" class="w-full" placeholder="mis. JNE / GoSend" />
+              <MasterSelect v-model="form.courier" table="couriers" />
             </UFormField>
             <UFormField label="No. resi">
               <UInput v-model="form.tracking_no" class="w-full" />

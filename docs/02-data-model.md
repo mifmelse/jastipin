@@ -69,6 +69,20 @@ Definisi jenis wadah angkut.
 - regulation_note (text, nullable) — mis. "kabin max 7kg maskapai X"
 - is_active
 
+### Picker masters *(BARU — A4)*
+Lima master "daftar pilihan" seragam: `id, name (unique), is_active, created_at`.
+- **expense_categories** — kategori Trip expense
+- **lead_sources** — asal lead CRM
+- **stores** — toko sourcing (Fulfillment)
+- **couriers** — kurir; dipakai 2 tempat (drop-in `courier_from` + delivery `courier`)
+- **payment_methods** — metode bayar (Receivables)
+
+**Penting — snapshot, BUKAN FK:** operations menyimpan **teks** nama yang dipilih saat
+dicatat (beku, seperti fx_rate). Master cuma daftar pilihan; rename/hapus master **nol efek**
+ke transaksi lama. UI pakai komponen `MasterSelect` (USelect dari master, nilai lama tetap
+tampil). Kolom operations terkait tetap text: `trip_expenses.category`, `leads.source`,
+`sourcing_records.store_name` & `courier_from`, `deliveries.courier`, `payments.method`.
+
 ---
 
 ## C. Catalog
@@ -89,7 +103,7 @@ Definisi jenis wadah angkut.
 - is_active, created_at, updated_at
 
 ### brands
-- id, name (unique), country_id (nullable), logo_url (nullable), is_active.
+- id, name (unique), country_id (nullable), image_url (nullable, logo), is_active.
 
 ### categories
 - id, name (unique), description, is_active.

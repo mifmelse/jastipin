@@ -190,7 +190,7 @@ async function submit() {
               <USelect v-model="form.status" :items="SOURCING_STATUS_OPTIONS" class="w-full" />
             </UFormField>
             <UFormField label="Toko">
-              <UInput v-model="form.store_name" class="w-full" placeholder="mis. Don Quijote" />
+              <MasterSelect v-model="form.store_name" table="stores" />
             </UFormField>
             <UFormField label="Tgl beli">
               <UInput v-model="form.purchased_at" type="date" class="w-full" />

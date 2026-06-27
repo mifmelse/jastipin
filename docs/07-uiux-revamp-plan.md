@@ -16,8 +16,10 @@
 - **Foto/bukti:** `brands.image_url`, `order_items.image_url` (nullable), `profiles.avatar_url`,
   `payments.proof_url`. *(customers.image_url & products.image_url SUDAH ADA.)*
 - **Master baru (5):** `expense_categories`, `lead_sources`, `stores`, `couriers`,
-  `payment_methods`. Ubah field free-text terkait jadi FK (atau tetap text + select; putuskan
-  saat implement — rekомendasi: FK nullable + `on delete set null`).
+  `payment_methods`. **KEPUTUSAN (user):** *snapshot/beku* — operations tetap simpan **teks**
+  nama saat dicatat (kayak fx_rate), master = **daftar pilihan saja**, BUKAN FK. Rename/hapus
+  master = **nol efek** ke transaksi lama. Input free-text → `MasterSelect` (USelect dari master,
+  pertahankan nilai lama). Kolom text operations TIDAK berubah.
 - **Traveler:** `trip_travelers` (trip_id, profile_id) — many-to-many; assign traveler ke trip.
 - **Substitusi:** tidak perlu kolom baru (`sourcing_records.is_substitute/substitute_note` udah ada) —
   cuma di-surface ke Order.
@@ -48,7 +50,7 @@
   store + topbar), **Brands**, **Products** (kolom udah ada), **Customers** (kolom udah ada),
   **Order item titipan** (opsional, buat shopper kenalin barang), **Payment proof**.
 
-**A4. Master-data framework + 5 master baru**
+**A4. Master-data framework + 5 master baru** — ✅ **SELESAI**
 - Pola reusable master CRUD. Master: `expense_categories` (Trip expense), `lead_sources` (CRM lead),
   `stores` (Fulfillment sourcing), `couriers` (Fulfillment drop-in + Delivery — 1 master dipakai 2),
   `payment_methods` (Receivables). Ganti input free-text jadi select dari master.
