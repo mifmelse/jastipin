@@ -76,7 +76,7 @@ const valid = computed(
 
     <div class="hidden md:block rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-gray-100 dark:bg-gray-800/40 text-left text-gray-500 border-b border-gray-200 dark:border-gray-800">
+        <thead class="bg-gray-200/70 dark:bg-gray-800/50 text-left text-gray-500 border-b border-gray-200 dark:border-gray-800">
           <tr>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide w-16">ISO2</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide w-16">ISO3</th>

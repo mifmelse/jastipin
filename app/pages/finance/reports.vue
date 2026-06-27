@@ -39,7 +39,7 @@ const kpis = computed(() => [
       <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-2">Profit per trip</h2>
       <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
+          <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
             <tr>
               <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Trip</th>
               <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Revenue</th>
