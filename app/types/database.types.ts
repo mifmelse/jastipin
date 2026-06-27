@@ -224,6 +224,13 @@ export type Database = {
             foreignKeyName: "crm_pipeline_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "crm_pipeline_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -566,6 +573,77 @@ export type Database = {
             foreignKeyName: "luggages_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "luggages_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manual_payables: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          currency: string
+          description: string
+          fx_rate: number
+          id: string
+          incurred_at: string | null
+          recorded_by: string | null
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description: string
+          fx_rate?: number
+          id?: string
+          incurred_at?: string | null
+          recorded_by?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string
+          fx_rate?: number
+          id?: string
+          incurred_at?: string | null
+          recorded_by?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_payables_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_payables_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "manual_payables_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -685,6 +763,13 @@ export type Database = {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "ar_per_order"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "order_summaries"
             referencedColumns: ["id"]
           },
@@ -787,6 +872,124 @@ export type Database = {
             columns: ["trip_route_id"]
             isOneToOne: false
             referencedRelation: "trip_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payable_settlements: {
+        Row: {
+          created_at: string
+          id: string
+          method: string | null
+          paid_at: string | null
+          recorded_by: string | null
+          source_id: string
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          method?: string | null
+          paid_at?: string | null
+          recorded_by?: string | null
+          source_id: string
+          source_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          method?: string | null
+          paid_at?: string | null
+          recorded_by?: string | null
+          source_id?: string
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payable_settlements_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          fx_rate: number
+          id: string
+          method: string | null
+          order_id: string
+          paid_at: string | null
+          recorded_by: string | null
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          fx_rate?: number
+          id?: string
+          method?: string | null
+          order_id: string
+          paid_at?: string | null
+          recorded_by?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          fx_rate?: number
+          id?: string
+          method?: string | null
+          order_id?: string
+          paid_at?: string | null
+          recorded_by?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "ar_per_order"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_summaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1037,6 +1240,13 @@ export type Database = {
             foreignKeyName: "shipments_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "ar_per_order"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "order_summaries"
             referencedColumns: ["id"]
           },
@@ -1217,6 +1427,13 @@ export type Database = {
             foreignKeyName: "trip_bookings_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_bookings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -1271,6 +1488,13 @@ export type Database = {
             foreignKeyName: "trip_expenses_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_expenses_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -1302,6 +1526,13 @@ export type Database = {
           trip_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trip_itineraries_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
           {
             foreignKeyName: "trip_itineraries_trip_id_fkey"
             columns: ["trip_id"]
@@ -1380,6 +1611,13 @@ export type Database = {
             foreignKeyName: "trip_moments_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_moments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
@@ -1424,6 +1662,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "countries"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_routes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
           },
           {
             foreignKeyName: "trip_routes_trip_id_fkey"
@@ -1591,6 +1836,19 @@ export type Database = {
       }
     }
     Views: {
+      ar_per_order: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          customer_name: string | null
+          order_id: string | null
+          order_status: string | null
+          outstanding_idr: number | null
+          paid_idr: number | null
+          total_idr: number | null
+        }
+        Relationships: []
+      }
       luggage_simulation: {
         Row: {
           category: string | null
@@ -1608,6 +1866,13 @@ export type Database = {
           type_name: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "luggages_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
           {
             foreignKeyName: "luggages_trip_id_fkey"
             columns: ["trip_id"]
@@ -1669,6 +1934,22 @@ export type Database = {
           },
         ]
       }
+      payables: {
+        Row: {
+          amount_idr: number | null
+          amount_src: number | null
+          currency: string | null
+          description: string | null
+          incurred_at: string | null
+          method: string | null
+          paid_at: string | null
+          source_id: string | null
+          source_type: string | null
+          status: string | null
+          trip_id: string | null
+        }
+        Relationships: []
+      }
       sourcing_summaries: {
         Row: {
           actual_price: number | null
@@ -1705,6 +1986,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trip_pnl: {
+        Row: {
+          code: string | null
+          cost_idr: number | null
+          name: string | null
+          profit_idr: number | null
+          revenue_idr: number | null
+          trip_id: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {

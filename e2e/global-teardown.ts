@@ -46,6 +46,14 @@ export default async function globalTeardown() {
   await admin.from('tax_rates').delete().like('name', 'E2E%')
   await admin.from('permissions').delete().like('key', 'e2e%')
 
+  // payable_settlements reference their source polymorphically (no FK), so a
+  // settlement outlives a cascaded source. Drop any that no longer resolve.
+  const { data: valid } = await admin.from('payables').select('source_type, source_id')
+  const validKeys = new Set((valid ?? []).map((v) => `${v.source_type}:${v.source_id}`))
+  const { data: setts } = await admin.from('payable_settlements').select('id, source_type, source_id')
+  const orphans = (setts ?? []).filter((s) => !validKeys.has(`${s.source_type}:${s.source_id}`)).map((s) => s.id)
+  if (orphans.length) await admin.from('payable_settlements').delete().in('id', orphans)
+
   const { data: list } = await admin.auth.admin.listUsers()
   for (const u of list.users) {
     if (u.email === E2E_EMAIL || u.email?.startsWith('e2e-crud-')) {
