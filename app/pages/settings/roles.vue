@@ -95,9 +95,9 @@ async function savePerms() {
       </template>
     </PageHeader>
 
-    <div class="hidden md:block rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-gray-200/70 dark:bg-gray-800/50 text-left text-gray-500 border-b border-gray-200 dark:border-gray-800">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Description</th>
@@ -105,10 +105,10 @@ async function savePerms() {
             <th class="px-3 py-2.5 w-40"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in (items as Role[]) ?? []" :key="row.id">
             <td class="px-3 py-2 font-medium">{{ row.name }}</td>
-            <td class="px-3 py-2 text-gray-500">{{ row.description }}</td>
+            <td class="px-3 py-2 text-stone-500">{{ row.description }}</td>
             <td class="px-3 py-2">
               <UBadge color="neutral" variant="soft">{{ row.role_permissions?.[0]?.count ?? 0 }}</UBadge>
             </td>
@@ -169,7 +169,7 @@ async function savePerms() {
       <template #body>
         <div class="space-y-4 max-h-[60vh] overflow-y-auto">
           <div v-for="g in permGroups" :key="g.resource">
-            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ g.resource }}</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-stone-400 mb-1">{{ g.resource }}</p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <UCheckbox
                 v-for="p in g.perms"
@@ -184,7 +184,7 @@ async function savePerms() {
       </template>
       <template #footer>
         <div class="flex justify-between items-center w-full">
-          <span class="text-xs text-gray-400">{{ selected.length }} dipilih</span>
+          <span class="text-xs text-stone-400">{{ selected.length }} dipilih</span>
           <div class="flex gap-2">
             <UButton color="neutral" variant="ghost" @click="permOpen = false">Batal</UButton>
             <UButton :loading="permSaving" @click="savePerms">Simpan</UButton>

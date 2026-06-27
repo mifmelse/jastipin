@@ -98,9 +98,9 @@ async function onDelete(row: Row) {
       </template>
     </PageHeader>
 
-    <div class="hidden md:block rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-gray-200/70 dark:bg-gray-800/50 text-left text-gray-500 border-b border-gray-200 dark:border-gray-800">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Category</th>
@@ -110,14 +110,14 @@ async function onDelete(row: Row) {
             <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in items ?? []" :key="row.id">
             <td class="px-3 py-2 font-medium">{{ row.name }}</td>
             <td class="px-3 py-2">
               <UBadge color="neutral" variant="soft">{{ row.category }}</UBadge>
             </td>
             <td class="px-3 py-2 text-right tabular-nums">{{ row.max_weight_g }}</td>
-            <td class="px-3 py-2 text-right tabular-nums text-gray-500">{{ row.tare_weight_g }}</td>
+            <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ row.tare_weight_g }}</td>
             <td class="px-3 py-2">
               <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft">
                 {{ row.is_active ? 'Yes' : 'No' }}
@@ -131,7 +131,7 @@ async function onDelete(row: Row) {
             </td>
           </tr>
           <tr v-if="!(items?.length)">
-            <td colspan="6" class="px-3 py-6 text-center text-gray-400">Belum ada data.</td>
+            <td colspan="6" class="px-3 py-6 text-center text-stone-400">Belum ada data.</td>
           </tr>
         </tbody>
       </table>

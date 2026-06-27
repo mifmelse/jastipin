@@ -10,7 +10,7 @@ const { state, resolve } = useConfirm()
     @update:open="(v: boolean) => { if (!v) resolve(false) }"
   >
     <template #body>
-      <p class="text-sm text-gray-600 dark:text-gray-300">{{ state.description }}</p>
+      <p class="text-sm text-stone-600 dark:text-stone-300">{{ state.description }}</p>
     </template>
     <template #footer>
       <div class="flex justify-end gap-2 w-full">

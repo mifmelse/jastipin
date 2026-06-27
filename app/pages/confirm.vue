@@ -12,7 +12,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center text-sm text-gray-500">
+  <div class="min-h-screen flex items-center justify-center text-sm text-stone-500">
     Mengarahkan…
   </div>
 </template>
