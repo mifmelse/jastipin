@@ -16,7 +16,7 @@ const countryOptions = computed(() => [
 ])
 
 const saving = ref(false)
-const form = reactive({ name: '', phone: '', email: '', gender: NONE, country_id: NONE, notes: '' })
+const form = reactive({ name: '', phone: '', email: '', gender: NONE, country_id: NONE, notes: '', image_url: '' })
 
 watchEffect(() => {
   if (!customer.value) return
@@ -27,6 +27,7 @@ watchEffect(() => {
     gender: fromNullable(customer.value.gender),
     country_id: fromNullable(customer.value.country_id),
     notes: customer.value.notes ?? '',
+    image_url: customer.value.image_url ?? '',
   })
 })
 
@@ -40,6 +41,7 @@ async function save() {
       gender: toNullable(form.gender),
       country_id: toNullable(form.country_id),
       notes: form.notes.trim() || null,
+      image_url: form.image_url || null,
     })
     toast.add({ title: 'Tersimpan', color: 'success' })
   } catch (e) {
@@ -52,6 +54,10 @@ async function save() {
 
 <template>
   <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <MediaThumb :url="form.image_url" size="size-16" rounded="rounded-full" icon="i-lucide-user" />
+      <FileUpload v-model="form.image_url" folder="customers" accept="image/*" />
+    </div>
     <UFormField label="Name" required>
       <UInput v-model="form.name" class="w-full" />
     </UFormField>

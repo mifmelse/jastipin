@@ -16,6 +16,7 @@ const { can } = useCan()
 const { items, paymentsFor, recordPayment, removePayment } = useReceivables()
 const { items: currencies } = useCurrencies()
 const user = useSupabaseUser()
+const { open: openMedia } = useMediaViewer()
 const toast = useToast()
 
 const currencyOptions = computed(() => (currencies.value ?? []).map((c) => ({ label: c.code, value: c.code })))
@@ -32,6 +33,7 @@ const form = reactive({
   reference: '',
   paid_at: '',
   status: 'paid',
+  proof_url: '',
 })
 const isForeign = computed(() => form.currency !== 'IDR')
 watch(() => form.currency, (c) => {
@@ -43,7 +45,7 @@ async function openRow(r: Ar) {
   Object.assign(form, {
     amount: r.outstanding_idr > 0 ? r.outstanding_idr : '',
     currency: 'IDR', fx_rate: 1, method: '', reference: '',
-    paid_at: new Date().toISOString().slice(0, 10), status: 'paid',
+    paid_at: new Date().toISOString().slice(0, 10), status: 'paid', proof_url: '',
   })
   open.value = true
   history.value = await paymentsFor(r.order_id)
@@ -62,10 +64,11 @@ async function save() {
       reference: form.reference.trim() || null,
       paid_at: form.paid_at || null,
       status: form.status,
+      proof_url: form.proof_url || null,
       recorded_by: user.value?.id ?? null,
     })
     history.value = await paymentsFor(active.value.order_id)
-    Object.assign(form, { amount: '', method: '', reference: '' })
+    Object.assign(form, { amount: '', method: '', reference: '', proof_url: '' })
   } catch (e) {
     toast.add({ title: 'Gagal menyimpan', description: (e as Error).message, color: 'error' })
   } finally {
@@ -174,6 +177,9 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
             <UFormField label="Referensi" class="sm:col-span-2">
               <UInput v-model="form.reference" class="w-full" placeholder="no. transaksi (opsional)" />
             </UFormField>
+            <UFormField label="Bukti pembayaran" class="sm:col-span-2">
+              <FileUpload v-model="form.proof_url" folder="payments" accept="image/*,application/pdf" />
+            </UFormField>
           </div>
           <UButton v-if="can('receivables.write')" :loading="saving" :disabled="form.amount === ''" icon="i-lucide-plus" @click="save">Catat pembayaran</UButton>
 
@@ -185,7 +191,10 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
                 {{ p.currency }} {{ Number(p.amount).toLocaleString('id-ID') }}
                 <span class="text-xs text-stone-400">· {{ p.method ?? '—' }} · {{ fmtDate(p.paid_at) }}</span>
               </div>
-              <UButton v-if="can('receivables.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus" @click="delPayment(p.id)" />
+              <div class="flex items-center gap-1 shrink-0">
+                <UButton v-if="p.proof_url" size="xs" color="neutral" variant="ghost" icon="i-lucide-receipt" aria-label="Lihat bukti" @click="openMedia({ url: p.proof_url })" />
+                <UButton v-if="can('receivables.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus" @click="delPayment(p.id)" />
+              </div>
             </div>
           </div>
         </div>

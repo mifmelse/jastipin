@@ -16,22 +16,22 @@ const countryOptions = computed(() => [
 const open = ref(false)
 const saving = ref(false)
 const editing = ref<Row | null>(null)
-const form = reactive({ name: '', country_id: NONE, is_active: true })
+const form = reactive({ name: '', country_id: NONE, is_active: true, image_url: '' })
 
 function openCreate() {
   editing.value = null
-  Object.assign(form, { name: '', country_id: NONE, is_active: true })
+  Object.assign(form, { name: '', country_id: NONE, is_active: true, image_url: '' })
   open.value = true
 }
 function openEdit(row: Row) {
   editing.value = row
-  Object.assign(form, { name: row.name, country_id: fromNullable(row.country_id), is_active: row.is_active })
+  Object.assign(form, { name: row.name, country_id: fromNullable(row.country_id), is_active: row.is_active, image_url: row.image_url ?? '' })
   open.value = true
 }
 async function save() {
   saving.value = true
   try {
-    const payload = { name: form.name.trim(), country_id: toNullable(form.country_id), is_active: form.is_active }
+    const payload = { name: form.name.trim(), country_id: toNullable(form.country_id), is_active: form.is_active, image_url: form.image_url || null }
     if (editing.value) await update(editing.value.id, payload)
     else await create(payload)
     open.value = false
@@ -71,7 +71,12 @@ async function onDelete(row: Row) {
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in items ?? []" :key="row.id">
-            <td class="px-3 py-2 font-medium">{{ row.name }}</td>
+            <td class="px-3 py-2 font-medium">
+              <div class="flex items-center gap-2">
+                <MediaThumb :url="row.image_url" size="size-7" icon="i-lucide-tag" />
+                {{ row.name }}
+              </div>
+            </td>
             <td class="px-3 py-2 text-stone-500">{{ row.countries?.name ?? '—' }}</td>
             <td class="px-3 py-2">
               <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft">
@@ -125,6 +130,9 @@ async function onDelete(row: Row) {
           </UFormField>
           <UFormField label="Active">
             <USwitch v-model="form.is_active" />
+          </UFormField>
+          <UFormField label="Logo">
+            <FileUpload v-model="form.image_url" folder="brands" accept="image/*" />
           </UFormField>
         </div>
       </template>

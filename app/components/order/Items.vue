@@ -43,6 +43,7 @@ const form = reactive({
   height_mm: '' as number | '',
   status: 'pending',
   notes: '',
+  image_url: '',
 })
 const showDims = ref(false)
 
@@ -50,7 +51,7 @@ function reset() {
   Object.assign(form, {
     product_id: '', item_name: '', fulfillment_type: 'sourcing', qty: 1, unit_id: NONE,
     requested_price: '', actual_price: '', weight_g: '', length_mm: '', width_mm: '', height_mm: '',
-    status: 'pending', notes: '',
+    status: 'pending', notes: '', image_url: '',
   })
   showDims.value = false
 }
@@ -77,6 +78,7 @@ function openEdit(i: ItemRow) {
     height_mm: i.height_mm ?? '',
     status: i.status,
     notes: i.notes ?? '',
+    image_url: i.image_url ?? '',
   })
   showDims.value = !!(i.length_mm || i.width_mm || i.height_mm)
   open.value = true
@@ -113,6 +115,7 @@ async function save() {
       height_mm: num(form.height_mm),
       status: form.status,
       notes: form.notes.trim() || null,
+      image_url: form.image_url || null,
     }
     if (editingId.value) await update(editingId.value, payload)
     else await create(payload)
@@ -160,8 +163,13 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="i in (items as ItemRow[]) ?? []" :key="i.id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
             <td class="px-3 py-2">
-              <div class="font-medium">{{ itemLabel(i) }}</div>
-              <div v-if="!i.product_id" class="text-xs text-stone-400">titipan</div>
+              <div class="flex items-center gap-2">
+                <MediaThumb :url="i.image_url" size="size-9" icon="i-lucide-box" />
+                <div>
+                  <div class="font-medium">{{ itemLabel(i) }}</div>
+                  <div v-if="!i.product_id" class="text-xs text-stone-400">titipan</div>
+                </div>
+              </div>
             </td>
             <td class="px-3 py-2">
               <UBadge :color="i.fulfillment_type === 'sourcing' ? 'info' : 'neutral'" variant="soft">
@@ -281,6 +289,9 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
 
           <UFormField label="Notes">
             <UInput v-model="form.notes" class="w-full" />
+          </UFormField>
+          <UFormField label="Foto item" help="Referensi biar shopper kenal barangnya.">
+            <FileUpload v-model="form.image_url" folder="order-items" accept="image/*" />
           </UFormField>
         </div>
       </template>

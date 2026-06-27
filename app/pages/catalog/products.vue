@@ -50,6 +50,7 @@ const form = reactive({
   currency: 'IDR',
   description: '',
   is_active: true,
+  image_url: '',
 })
 
 const numOrNull = (v: number | '') => (v === '' ? null : Number(v))
@@ -74,7 +75,7 @@ function reset() {
   Object.assign(form, {
     name: '', category_id: '', unit_id: '', brand_id: NONE, sub_category_id: NONE,
     country_id: NONE, weight_g: '', length_mm: '', width_mm: '', height_mm: '',
-    base_price: '', cost_price: '', currency: 'IDR', description: '', is_active: true,
+    base_price: '', cost_price: '', currency: 'IDR', description: '', is_active: true, image_url: '',
   })
   effectiveCategory.value = ''
 }
@@ -101,6 +102,7 @@ function openEdit(row: Row) {
     currency: row.currency,
     description: row.description ?? '',
     is_active: row.is_active,
+    image_url: row.image_url ?? '',
   })
   effectiveCategory.value = row.category_id
   open.value = true
@@ -124,6 +126,7 @@ async function save() {
       currency: form.currency.trim() || 'IDR',
       description: form.description.trim() || null,
       is_active: form.is_active,
+      image_url: form.image_url || null,
     }
     if (editing.value) await update(editing.value.id, payload)
     else await create(payload)
@@ -179,8 +182,13 @@ const valid = computed(
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in items ?? []" :key="row.id">
             <td class="px-3 py-2">
-              <div class="font-medium">{{ row.name }}</div>
-              <div v-if="row.code" class="font-mono text-xs text-stone-400">{{ row.code }}</div>
+              <div class="flex items-center gap-2">
+                <MediaThumb :url="row.image_url" size="size-9" icon="i-lucide-package" />
+                <div>
+                  <div class="font-medium">{{ row.name }}</div>
+                  <div v-if="row.code" class="font-mono text-xs text-stone-400">{{ row.code }}</div>
+                </div>
+              </div>
             </td>
             <td class="px-3 py-2 text-stone-500">{{ row.brands?.name ?? '—' }}</td>
             <td class="px-3 py-2 text-stone-500">
@@ -294,6 +302,9 @@ const valid = computed(
 
           <UFormField label="Description">
             <UTextarea v-model="form.description" class="w-full" :rows="2" />
+          </UFormField>
+          <UFormField label="Foto produk">
+            <FileUpload v-model="form.image_url" folder="products" accept="image/*" />
           </UFormField>
           <UFormField label="Active">
             <USwitch v-model="form.is_active" />

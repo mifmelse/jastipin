@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           country_id: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           logo_url: string | null
           name: string
@@ -25,6 +26,7 @@ export type Database = {
         Insert: {
           country_id?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           logo_url?: string | null
           name: string
@@ -32,6 +34,7 @@ export type Database = {
         Update: {
           country_id?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           logo_url?: string | null
           name?: string
@@ -707,6 +710,7 @@ export type Database = {
           fulfillment_type: string
           height_mm: number | null
           id: string
+          image_url: string | null
           item_name: string | null
           length_mm: number | null
           notes: string | null
@@ -726,6 +730,7 @@ export type Database = {
           fulfillment_type?: string
           height_mm?: number | null
           id?: string
+          image_url?: string | null
           item_name?: string | null
           length_mm?: number | null
           notes?: string | null
@@ -745,6 +750,7 @@ export type Database = {
           fulfillment_type?: string
           height_mm?: number | null
           id?: string
+          image_url?: string | null
           item_name?: string | null
           length_mm?: number | null
           notes?: string | null
@@ -930,6 +936,7 @@ export type Database = {
           method: string | null
           order_id: string
           paid_at: string | null
+          proof_url: string | null
           recorded_by: string | null
           reference: string | null
           status: string
@@ -944,6 +951,7 @@ export type Database = {
           method?: string | null
           order_id: string
           paid_at?: string | null
+          proof_url?: string | null
           recorded_by?: string | null
           reference?: string | null
           status?: string
@@ -958,6 +966,7 @@ export type Database = {
           method?: string | null
           order_id?: string
           paid_at?: string | null
+          proof_url?: string | null
           recorded_by?: string | null
           reference?: string | null
           status?: string
@@ -1119,6 +1128,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           full_name: string | null
           id: string
@@ -1126,6 +1136,7 @@ export type Database = {
           user_type: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id: string
@@ -1133,6 +1144,7 @@ export type Database = {
           user_type?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
