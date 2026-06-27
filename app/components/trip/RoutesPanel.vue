@@ -140,7 +140,7 @@ const valid = computed(
       <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada route.</p>
     </div>
 
-    <UModal v-model:open="open" :title="isRound ? 'Tambah Rute (pergi–balik)' : 'Tambah Leg'">
+    <UModal v-model:open="open" :title="isRound ? 'Tambah Route (pergi–balik)' : 'Tambah Route'">
       <template #body>
         <div class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -158,7 +158,7 @@ const valid = computed(
             </UFormField>
           </div>
           <p v-if="isRound" class="text-xs text-stone-500">
-            Leg balik (To → From) dibuat otomatis.
+            Route balik (To → From) dibuat otomatis.
           </p>
         </div>
       </template>

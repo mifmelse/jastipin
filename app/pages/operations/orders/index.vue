@@ -171,7 +171,7 @@ watch(legs, (list) => {
             <USelect v-model="form.customer_id" :items="customerOptions" class="w-full" placeholder="Pilih customer…" />
           </UFormField>
           <UFormField label="Route" required help="Order menempel ke route, bukan trip.">
-            <USelect v-model="form.trip_route_id" :items="legOptions" class="w-full" placeholder="Pilih leg…" />
+            <USelect v-model="form.trip_route_id" :items="legOptions" class="w-full" placeholder="Pilih route…" />
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Currency">
