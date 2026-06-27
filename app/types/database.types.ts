@@ -408,6 +408,69 @@ export type Database = {
           },
         ]
       }
+      load_items: {
+        Row: {
+          id: string
+          luggage_id: string
+          order_item_id: string
+          placed_at: string
+          placed_by: string | null
+          trip_route_id: string
+        }
+        Insert: {
+          id?: string
+          luggage_id: string
+          order_item_id: string
+          placed_at?: string
+          placed_by?: string | null
+          trip_route_id: string
+        }
+        Update: {
+          id?: string
+          luggage_id?: string
+          order_item_id?: string
+          placed_at?: string
+          placed_by?: string | null
+          trip_route_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "load_items_luggage_id_fkey"
+            columns: ["luggage_id"]
+            isOneToOne: false
+            referencedRelation: "luggage_simulation"
+            referencedColumns: ["luggage_id"]
+          },
+          {
+            foreignKeyName: "load_items_luggage_id_fkey"
+            columns: ["luggage_id"]
+            isOneToOne: false
+            referencedRelation: "luggages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "load_items_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "load_items_placed_by_fkey"
+            columns: ["placed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "load_items_trip_route_id_fkey"
+            columns: ["trip_route_id"]
+            isOneToOne: false
+            referencedRelation: "trip_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       luggage_types: {
         Row: {
           category: string
@@ -452,6 +515,61 @@ export type Database = {
           tare_weight_g?: number
         }
         Relationships: []
+      }
+      luggages: {
+        Row: {
+          assigned_traveler: string | null
+          created_at: string
+          id: string
+          label: string
+          luggage_type_id: string
+          status: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_traveler?: string | null
+          created_at?: string
+          id?: string
+          label: string
+          luggage_type_id: string
+          status?: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_traveler?: string | null
+          created_at?: string
+          id?: string
+          label?: string
+          luggage_type_id?: string
+          status?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "luggages_assigned_traveler_fkey"
+            columns: ["assigned_traveler"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "luggages_luggage_type_id_fkey"
+            columns: ["luggage_type_id"]
+            isOneToOne: false
+            referencedRelation: "luggage_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "luggages_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       menus: {
         Row: {
@@ -1406,6 +1524,32 @@ export type Database = {
       }
     }
     Views: {
+      luggage_simulation: {
+        Row: {
+          category: string | null
+          item_count: number | null
+          label: string | null
+          loaded_volume_cm3: number | null
+          loaded_weight_g: number | null
+          luggage_id: string | null
+          max_volume_cm3: number | null
+          max_weight_g: number | null
+          regulation_note: string | null
+          status: string | null
+          tare_weight_g: number | null
+          trip_id: string | null
+          type_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "luggages_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_summaries: {
         Row: {
           code: string | null
