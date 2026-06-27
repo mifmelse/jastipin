@@ -86,11 +86,16 @@
   (drag pindah semua + stepper −/+); status `packed` cuma saat semua unit ter-place; berat/volume
   kartu & simulasi pakai qty; kartu queue tampil berat·p×l×t·volume.
 
-## FASE C — Order & Fulfillment
-- Produk dipilih di item order → **harga auto-fill** (dari `products.price`, editable);
-  **berat/dimensi disembunyiin** (pakai data produk) — field manual cuma untuk item free-text.
-- **Label berat diperjelas**: "Berat / unit" + tampil total (unit × qty).
-- **Substitusi** di-surface ke Order: badge "diganti" + catatan substitusi pada item.
+## FASE C — Order & Fulfillment — ✅ **SELESAI**
+- ✅ Produk dipilih → **harga auto-fill** dari `products.base_price` (editable, lewat
+  `pickProduct`); **berat/dimensi disembunyiin** untuk item produk (di-save null → pakai data
+  produk). Field manual berat/dimensi cuma untuk item free-text.
+- ✅ **Label berat "Berat / unit"** + tampil total (per-unit × qty).
+- ✅ **Substitusi** di-surface ke Order: badge "diganti" + catatan, dari `sourcing_records`
+  (embed unique bisa object/array → di-handle dua-duanya).
+- ✅ **Packing fallback**: queue/luggage card & weightOf pakai `oi.weight_g ?? product.weight_g`
+  (+ dims) — item produk yang berat-nya null tetap kehitung dari katalog. `usePackableItems` +
+  `useLuggages` select ikut ambil `products(weight_g, dims)`.
 - (Foto item titipan → sudah di A3.)
 
 ## FASE D — Finance: Invoice & pembayaran

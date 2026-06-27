@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 
+type SourcingRec = { is_substitute: boolean; substitute_note: string | null }
 type ItemRow = Database['public']['Tables']['order_items']['Row'] & {
-  products?: { name: string } | null
+  products?: { name: string; base_price: number | null; weight_g: number | null; length_mm: number | null; width_mm: number | null; height_mm: number | null } | null
   units?: { name: string; symbol: string | null } | null
+  // unique FK → supabase may embed as an object or a single-element array
+  sourcing_records?: SourcingRec | SourcingRec[] | null
 }
 
 const props = defineProps<{ orderId: string; currency: string }>()
@@ -15,6 +18,19 @@ const { items: units } = useUnits()
 const toast = useToast()
 
 const productOptions = computed(() => (products.value ?? []).map((p) => ({ label: p.name, value: p.id })))
+// The picked product's catalog data — price auto-fills, weight/dims come from here.
+const selectedProduct = computed(() => (products.value ?? []).find((p) => p.id === form.product_id) ?? null)
+function pickProduct(id: string) {
+  form.product_id = id
+  const p = (products.value ?? []).find((x) => x.id === id)
+  if (p) form.requested_price = p.base_price ?? '' // auto-fill (editable)
+}
+// surfaced from the sourcing step (substitution = barang diganti)
+const substitutionOf = (i: ItemRow) => {
+  const raw = i.sourcing_records
+  const sr = Array.isArray(raw) ? raw[0] : raw
+  return sr?.is_substitute ? sr : null
+}
 const unitOptions = computed(() => [
   { label: '— unit —', value: NONE },
   ...(units.value ?? []).map((u) => ({ label: u.symbol ? `${u.name} (${u.symbol})` : u.name, value: u.id })),
@@ -22,6 +38,12 @@ const unitOptions = computed(() => [
 
 const itemLabel = (i: ItemRow) => i.products?.name ?? i.item_name ?? '(item)'
 const lineTotal = (i: ItemRow) => i.qty * Number(i.requested_price ?? 0)
+
+// Berat per-unit (free-text input, atau dari produk) × qty = total.
+const perUnitWeight = computed(() =>
+  mode.value === 'free' ? Number(form.weight_g || 0) : Number(selectedProduct.value?.weight_g ?? 0),
+)
+const weightTotal = computed(() => perUnitWeight.value * (Number(form.qty) || 1))
 
 // --- add / edit ---
 // An item is EITHER a catalog product OR a free-text drop-in — never both.
@@ -109,10 +131,11 @@ async function save() {
       unit_id: toNullable(form.unit_id),
       requested_price: num(form.requested_price),
       actual_price: num(form.actual_price),
-      weight_g: num(form.weight_g),
-      length_mm: num(form.length_mm),
-      width_mm: num(form.width_mm),
-      height_mm: num(form.height_mm),
+      // product items inherit weight/dims from the catalog — only free-text items carry their own
+      weight_g: mode.value === 'free' ? num(form.weight_g) : null,
+      length_mm: mode.value === 'free' ? num(form.length_mm) : null,
+      width_mm: mode.value === 'free' ? num(form.width_mm) : null,
+      height_mm: mode.value === 'free' ? num(form.height_mm) : null,
       status: form.status,
       notes: form.notes.trim() || null,
       image_url: form.image_url || null,
@@ -165,9 +188,13 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
             <td class="px-3 py-2">
               <div class="flex items-center gap-2">
                 <MediaThumb :url="i.image_url" size="size-9" icon="i-lucide-box" />
-                <div>
-                  <div class="font-medium">{{ itemLabel(i) }}</div>
+                <div class="min-w-0">
+                  <div class="font-medium flex items-center gap-1.5">
+                    {{ itemLabel(i) }}
+                    <UBadge v-if="substitutionOf(i)" color="warning" variant="soft" size="xs">diganti</UBadge>
+                  </div>
                   <div v-if="!i.product_id" class="text-xs text-stone-400">titipan</div>
+                  <div v-if="substitutionOf(i)?.substitute_note" class="text-xs text-warning truncate max-w-[18rem]">↳ {{ substitutionOf(i)?.substitute_note }}</div>
                 </div>
               </div>
             </td>
@@ -209,6 +236,7 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2 min-w-0">
             <span class="font-medium truncate">{{ itemLabel(i) }}</span>
+            <UBadge v-if="substitutionOf(i)" color="warning" variant="soft" size="xs" class="shrink-0">diganti</UBadge>
             <span v-if="!i.product_id" class="font-mono text-xs text-stone-400 shrink-0">titipan</span>
           </div>
           <UBadge :color="itemStatusColor(i.status)" variant="soft" class="capitalize shrink-0">
@@ -246,7 +274,7 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
           </div>
 
           <UFormField v-if="mode === 'product'" label="Produk" required>
-            <USelect v-model="form.product_id" :items="productOptions" class="w-full" placeholder="Pilih produk…" />
+            <USelect :model-value="form.product_id" :items="productOptions" class="w-full" placeholder="Pilih produk…" @update:model-value="pickProduct" />
           </UFormField>
           <UFormField v-else label="Nama item" required>
             <UInput v-model="form.item_name" class="w-full" placeholder="mis. Skincare titipan" />
@@ -265,18 +293,24 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
             <UFormField label="Unit">
               <USelect v-model="form.unit_id" :items="unitOptions" class="w-full" />
             </UFormField>
-            <UFormField :label="`Harga diminta (${currency})`">
+            <UFormField :label="`Harga diminta (${currency})`" :help="mode === 'product' ? 'Auto dari produk (bisa diubah)' : undefined">
               <UInput v-model.number="form.requested_price" type="number" class="w-full" />
             </UFormField>
             <UFormField :label="`Harga aktual (${currency})`" help="Yang benar-benar dibayar shopper.">
               <UInput v-model.number="form.actual_price" type="number" class="w-full" />
             </UFormField>
-            <UFormField label="Berat (gram)">
+            <UFormField v-if="mode === 'free'" label="Berat / unit (gram)" :help="`Total ${weightTotal.toLocaleString('id-ID')} g`">
               <UInput v-model.number="form.weight_g" type="number" class="w-full" />
+            </UFormField>
+            <UFormField v-else label="Berat / unit">
+              <div class="h-9 flex items-center text-sm text-stone-500">
+                <span v-if="selectedProduct?.weight_g != null">{{ Number(selectedProduct.weight_g).toLocaleString('id-ID') }} g · total {{ weightTotal.toLocaleString('id-ID') }} g</span>
+                <span v-else class="text-stone-400">dari produk</span>
+              </div>
             </UFormField>
           </div>
 
-          <div>
+          <div v-if="mode === 'free'">
             <button type="button" class="text-xs text-primary hover:underline" @click="showDims = !showDims">
               {{ showDims ? '− Sembunyikan' : '+ Tambah' }} dimensi (mm)
             </button>

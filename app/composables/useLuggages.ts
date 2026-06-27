@@ -19,7 +19,7 @@ export function useLuggages(tripId: Ref<string | null>) {
         .select(
           '*, luggage_types(name, category, max_weight_g, tare_weight_g, max_volume_cm3, regulation_note), ' +
             'assigned:profiles(full_name), ' +
-            'load_items(id, qty, trip_route_id, order_items(id, qty, item_name, weight_g, length_mm, width_mm, height_mm, products(name), orders(code, customers(name))))',
+            'load_items(id, qty, trip_route_id, order_items(id, qty, item_name, weight_g, length_mm, width_mm, height_mm, products(name, weight_g, length_mm, width_mm, height_mm), orders(code, customers(name))))',
         )
         .eq('trip_id', tripId.value)
         .order('created_at')

@@ -8,15 +8,12 @@ import draggable from 'vuedraggable'
 const props = defineProps<{ tripId: string; routeId: string | null }>()
 const tripId = toRef(props, 'tripId')
 
-type OrderItemEmbed = {
+type Dims = { weight_g: number | null; length_mm: number | null; width_mm: number | null; height_mm: number | null }
+type OrderItemEmbed = Dims & {
   id: string
   qty: number
   item_name: string | null
-  weight_g: number | null
-  length_mm: number | null
-  width_mm: number | null
-  height_mm: number | null
-  products?: { name: string } | null
+  products?: ({ name: string } & Dims) | null
   orders?: { code: string | null; customers?: { name: string } | null } | null
 }
 type LoadItem = { id: string; qty: number; trip_route_id: string; order_items?: OrderItemEmbed | null }
@@ -25,15 +22,11 @@ type Luggage = Database['public']['Tables']['luggages']['Row'] & {
   assigned?: { full_name: string | null } | null
   load_items?: LoadItem[]
 }
-type Packable = {
+type Packable = Dims & {
   id: string
   item_name: string | null
   qty: number
-  weight_g: number | null
-  length_mm: number | null
-  width_mm: number | null
-  height_mm: number | null
-  products?: { name: string } | null
+  products?: ({ name: string } & Dims) | null
   orders?: { code: string | null; trip_route_id: string; customers?: { name: string } | null } | null
 }
 type Card = { key: string; orderItemId: string; loadItemId: string | null; title: string; sub: string; meta: string; qty: number }
@@ -64,8 +57,19 @@ function remainingOf(orderItemId: string) {
   return p ? p.qty - placedOf(orderItemId) : 0
 }
 
+// Effective weight/dims: the order_item's own, falling back to the catalog
+// product's (product items leave their own null — see Order item form / FASE C).
+function eff(s: (Dims & { products?: Dims | null }) | null | undefined) {
+  return {
+    w: Number(s?.weight_g ?? s?.products?.weight_g ?? 0),
+    l: s?.length_mm ?? s?.products?.length_mm ?? null,
+    width: s?.width_mm ?? s?.products?.width_mm ?? null,
+    h: s?.height_mm ?? s?.products?.height_mm ?? null,
+  }
+}
+
 function weightOf(l: Luggage) {
-  const loaded = routeItems(l).reduce((s, li) => s + Number(li.order_items?.weight_g ?? 0) * li.qty, 0)
+  const loaded = routeItems(l).reduce((s, li) => s + eff(li.order_items).w * li.qty, 0)
   const tare = Number(l.luggage_types?.tare_weight_g ?? 0)
   const max = Number(l.luggage_types?.max_weight_g ?? 0)
   const total = loaded + tare
@@ -90,18 +94,22 @@ watchEffect(() => {
   pool.value = routePackable.value
     .map((p) => ({ p, rem: p.qty - placedOf(p.id) }))
     .filter((x) => x.rem > 0)
-    .map(({ p, rem }) => ({
-      key: `p-${p.id}`,
-      orderItemId: p.id,
-      loadItemId: null,
-      qty: rem,
-      title: titleOf(p),
-      sub: `${p.orders?.code ?? ''} · ${p.orders?.customers?.name ?? ''}`,
-      meta: metaStr(Number(p.weight_g ?? 0), p.length_mm, p.width_mm, p.height_mm, rem),
-    }))
+    .map(({ p, rem }) => {
+      const e = eff(p)
+      return {
+        key: `p-${p.id}`,
+        orderItemId: p.id,
+        loadItemId: null,
+        qty: rem,
+        title: titleOf(p),
+        sub: `${p.orders?.code ?? ''} · ${p.orders?.customers?.name ?? ''}`,
+        meta: metaStr(e.w, e.l, e.width, e.h, rem),
+      }
+    })
   for (const l of (luggages.value as Luggage[]) ?? []) {
     byLuggage[l.id] = routeItems(l).map((li) => {
       const oi = li.order_items
+      const e = eff(oi)
       return {
         key: `li-${li.id}`,
         orderItemId: oi?.id ?? '',
@@ -109,7 +117,7 @@ watchEffect(() => {
         qty: li.qty,
         title: oi ? titleOf(oi) : '(item)',
         sub: `${oi?.orders?.code ?? ''} · ${oi?.orders?.customers?.name ?? ''}`,
-        meta: metaStr(Number(oi?.weight_g ?? 0), oi?.length_mm ?? null, oi?.width_mm ?? null, oi?.height_mm ?? null, li.qty),
+        meta: metaStr(e.w, e.l, e.width, e.h, li.qty),
       }
     })
   }
