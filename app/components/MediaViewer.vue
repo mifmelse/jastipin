@@ -12,19 +12,25 @@ const hasMany = computed(() => items.value.length > 1)
 
 function onKey(e: KeyboardEvent) {
   if (!isOpen.value) return
-  if (e.key === 'Escape') close()
-  else if (e.key === 'ArrowRight') next()
+  if (e.key === 'Escape') {
+    // Capture-phase + stopImmediate so the underlying modal's own Esc handler
+    // doesn't also fire (closing the payment modal beneath the lightbox).
+    e.stopImmediatePropagation()
+    e.preventDefault()
+    close()
+  } else if (e.key === 'ArrowRight') next()
   else if (e.key === 'ArrowLeft') prev()
 }
-onMounted(() => window.addEventListener('keydown', onKey))
-onUnmounted(() => window.removeEventListener('keydown', onKey))
+// capture phase: intercept Esc before the underlying Reka dialog sees it
+onMounted(() => window.addEventListener('keydown', onKey, true))
+onUnmounted(() => window.removeEventListener('keydown', onKey, true))
 </script>
 
 <template>
   <Teleport to="body">
     <div
       v-if="isOpen"
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 pointer-events-auto"
       role="dialog"
       aria-modal="true"
       @click.self="close"

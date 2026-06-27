@@ -16,7 +16,7 @@ const { can } = useCan()
 const { items, paymentsFor, recordPayment, removePayment } = useReceivables()
 const { items: currencies } = useCurrencies()
 const user = useSupabaseUser()
-const { open: openMedia } = useMediaViewer()
+const { open: openMedia, isOpen: mediaOpen } = useMediaViewer()
 const toast = useToast()
 
 const currencyOptions = computed(() => (currencies.value ?? []).map((c) => ({ label: c.code, value: c.code })))
@@ -147,7 +147,7 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
       <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada order.</p>
     </div>
 
-    <UModal v-model:open="open" :title="active ? `Pembayaran — ${active.code}` : 'Pembayaran'">
+    <UModal v-model:open="open" :dismissible="!mediaOpen" :title="active ? `Pembayaran — ${active.code}` : 'Pembayaran'">
       <template #body>
         <div v-if="active" class="space-y-4">
           <div class="flex justify-between text-sm">
