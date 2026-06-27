@@ -79,18 +79,18 @@ async function submit() {
       <USelect v-model="filterLeg" :items="legOptions" class="w-72" />
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Order</th>
-            <th class="px-3 py-2 font-medium">Customer</th>
-            <th class="px-3 py-2 font-medium">Item</th>
-            <th class="px-3 py-2 font-medium text-right">Qty</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 font-medium">Diterima</th>
-            <th class="px-3 py-2 font-medium">Kondisi</th>
-            <th class="px-3 py-2 w-20"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Order</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Item</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Qty</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Diterima</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Kondisi</th>
+            <th class="px-3 py-2.5 w-20"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -122,6 +122,29 @@ async function submit() {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="r in (items as Row[]) ?? []"
+        :key="r.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ itemLabel(r) }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ r.orders?.code }}</span>
+          </div>
+          <UBadge :color="itemStatusColor(r.status)" variant="soft" class="capitalize shrink-0">
+            {{ r.status.replace('_', ' ') }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ r.orders?.customers?.name ?? '—' }}</span>
+          <span class="font-medium tabular-nums shrink-0">{{ r.qty }}</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Tidak ada item drop-in.</p>
     </div>
 
     <UModal v-model:open="open" :title="active ? `Terima — ${itemLabel(active)}` : 'Terima'">

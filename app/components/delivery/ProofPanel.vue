@@ -51,17 +51,17 @@ async function submit() {
 
 <template>
   <div class="space-y-3">
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Order</th>
-            <th class="px-3 py-2 font-medium">Customer</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 font-medium">Diterima</th>
-            <th class="px-3 py-2 font-medium">TTD</th>
-            <th class="px-3 py-2 font-medium">Bukti</th>
-            <th class="px-3 py-2 w-28"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Order</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Diterima</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">TTD</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Bukti</th>
+            <th class="px-3 py-2.5 w-28"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -91,6 +91,30 @@ async function submit() {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="s in rows"
+        :key="s.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ s.orders?.customers?.name ?? '—' }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ s.orders?.code }}</span>
+          </div>
+          <UBadge :color="shipmentStatusColor(s.status)" variant="soft" class="capitalize shrink-0">{{ shipmentStatusLabel(s.status) }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ fmtDate(s.delivered_at) }}</span>
+          <span class="font-medium tabular-nums shrink-0">
+            <UIcon v-if="s.recipient_signed" name="i-lucide-check" class="size-4 text-success align-middle" />
+            <span v-else class="text-stone-400">TTD —</span>
+          </span>
+        </div>
+      </div>
+      <p v-if="!rows.length" class="text-center text-stone-400 text-sm py-6">Belum ada pengiriman yang berjalan.</p>
     </div>
 
     <UModal v-model:open="open" :title="active ? `Bukti — ${active.orders?.code}` : 'Bukti'">

@@ -61,17 +61,17 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
       </template>
     </PageHeader>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Code</th>
-            <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 font-medium">Type</th>
-            <th class="px-3 py-2 font-medium text-right">Legs</th>
-            <th class="px-3 py-2 font-medium text-right">Traveler</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-16"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Code</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Type</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Legs</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Traveler</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-16"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -100,6 +100,29 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <button
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+        @click="router.push(`/operations/trips/${row.id}`)"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.name }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ row.code }}</span>
+          </div>
+          <UBadge :color="tripStatusColor(row.status)" variant="soft" class="shrink-0">{{ row.status }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ row.type }}</span>
+          <span class="font-medium tabular-nums shrink-0">{{ legCount(row) }} legs</span>
+        </div>
+      </button>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada trip.</p>
     </div>
 
     <UModal v-model:open="open" title="Tambah Trip">

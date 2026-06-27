@@ -107,16 +107,16 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
       <span class="text-sm text-stone-500 ml-auto">Belum dibayar: <span class="font-semibold text-warning">{{ formatIDR(totalUnpaid) }}</span></span>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Sumber</th>
-            <th class="px-3 py-2 font-medium">Deskripsi</th>
-            <th class="px-3 py-2 font-medium">Tanggal</th>
-            <th class="px-3 py-2 font-medium text-right">Nilai</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-32"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Sumber</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Deskripsi</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Tanggal</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Nilai</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-32"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -126,7 +126,7 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
             </td>
             <td class="px-3 py-2">{{ p.description }}</td>
             <td class="px-3 py-2 text-stone-500">{{ fmtDate(p.incurred_at) }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">
               {{ formatIDR(p.amount_idr) }}
               <span v-if="p.currency !== 'IDR'" class="block text-xs text-stone-400">{{ p.currency }} {{ Number(p.amount_src).toLocaleString('id-ID') }}</span>
             </td>
@@ -147,6 +147,29 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="p in rows"
+        :key="`${p.source_type}:${p.source_id}`"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ p.description }}</span>
+          </div>
+          <UBadge :color="p.status === 'paid' ? 'success' : 'neutral'" variant="soft" class="capitalize shrink-0">{{ p.status }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate inline-flex items-center gap-2">
+            <UBadge :color="payableSourceColor(p.source_type)" variant="soft" size="xs">{{ PAYABLE_SOURCE_LABEL[p.source_type] ?? p.source_type }}</UBadge>
+            {{ fmtDate(p.incurred_at) }}
+          </span>
+          <span class="font-semibold text-primary tabular-nums shrink-0">{{ formatIDR(p.amount_idr) }}</span>
+        </div>
+      </div>
+      <p v-if="!rows.length" class="text-center text-stone-400 text-sm py-6">Tidak ada payable.</p>
     </div>
 
     <UModal v-model:open="open" title="Tambah Payable Manual">

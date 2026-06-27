@@ -22,7 +22,7 @@ const linkClass = (path: string | null) =>
 </script>
 
 <template>
-  <div class="min-h-screen bg-stone-50 dark:bg-stone-950">
+  <div class="min-h-screen bg-stone-100 dark:bg-stone-950">
     <!-- mobile backdrop -->
     <div
       v-if="sidebarOpen"

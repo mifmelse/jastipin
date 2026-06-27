@@ -47,7 +47,7 @@ test('load planning: create luggage, pack item, weight + status + simulation', a
   await lm.getByRole('combobox').first().click() // tipe
   await page.getByRole('option', { name: 'Backpack', exact: true }).click()
   await page.getByRole('button', { name: 'Simpan' }).click()
-  await expect(page.getByText(LUG)).toBeVisible()
+  await expect(page.getByText(LUG).first()).toBeVisible()
 
   // pack the item onto it
   await page.getByRole('tab', { name: 'Packing Board' }).click()

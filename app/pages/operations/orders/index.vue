@@ -94,7 +94,7 @@ watch(legs, (list) => {
       </template>
     </PageHeader>
 
-    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>

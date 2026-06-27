@@ -88,23 +88,23 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
   <div class="space-y-4">
     <PageHeader title="Receivables" subtitle="Uang masuk dari customer per order — tagihan vs terbayar." icon="i-lucide-arrow-down-left" />
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Order</th>
-            <th class="px-3 py-2 font-medium">Customer</th>
-            <th class="px-3 py-2 font-medium text-right">Tagihan</th>
-            <th class="px-3 py-2 font-medium text-right">Terbayar</th>
-            <th class="px-3 py-2 font-medium text-right">Sisa</th>
-            <th class="px-3 py-2 w-28"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Order</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Tagihan</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Terbayar</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Sisa</th>
+            <th class="px-3 py-2.5 w-28"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="r in (items as Ar[]) ?? []" :key="r.order_id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
             <td class="px-3 py-2 font-mono text-xs">{{ r.code }}</td>
             <td class="px-3 py-2">{{ r.customer_name }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">{{ formatIDR(r.total_idr) }}</td>
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">{{ formatIDR(r.total_idr) }}</td>
             <td class="px-3 py-2 text-right tabular-nums text-success">{{ formatIDR(r.paid_idr) }}</td>
             <td class="px-3 py-2 text-right tabular-nums" :class="r.outstanding_idr > 0 ? 'text-warning font-medium' : 'text-stone-400'">
               {{ formatIDR(r.outstanding_idr) }}
@@ -122,6 +122,26 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="r in (items as Ar[]) ?? []"
+        :key="r.order_id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ r.customer_name }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ r.code }}</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">Sisa tagihan</span>
+          <span class="font-semibold text-primary tabular-nums shrink-0">{{ formatIDR(r.outstanding_idr) }}</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada order.</p>
     </div>
 
     <UModal v-model:open="open" :title="active ? `Pembayaran — ${active.code}` : 'Pembayaran'">

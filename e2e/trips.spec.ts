@@ -91,7 +91,7 @@ test('trip type change resets legs', async ({ page }) => {
   await page.getByRole('button', { name: 'Ganti & reset' }).click()
 
   await page.getByRole('tab', { name: 'Routes/Legs' }).click()
-  await expect(page.getByText('Belum ada leg')).toBeVisible()
+  await expect(page.getByText('Belum ada leg').first()).toBeVisible()
   await gotoReady(page, '/operations/trips')
   await deleteRow(page, new RegExp(name))
 })

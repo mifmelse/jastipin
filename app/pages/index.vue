@@ -102,20 +102,20 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
         <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Profit per trip</h2>
         <NuxtLink to="/finance/reports" class="text-xs text-primary hover:underline">Lihat semua →</NuxtLink>
       </div>
-      <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+      <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+          <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
             <tr>
-              <th class="px-3 py-2 font-medium">Trip</th>
-              <th class="px-3 py-2 font-medium text-right">Revenue</th>
-              <th class="px-3 py-2 font-medium text-right">Biaya</th>
-              <th class="px-3 py-2 font-medium text-right">Profit</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Trip</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Revenue</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Biaya</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Profit</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
             <tr v-for="t in topTrips" :key="t.trip_id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
               <td class="px-3 py-2"><span class="font-mono text-xs text-stone-400 mr-1">{{ t.code }}</span>{{ t.name }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ formatIDR(t.revenue_idr) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">{{ formatIDR(t.revenue_idr) }}</td>
               <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ formatIDR(t.cost_idr) }}</td>
               <td class="px-3 py-2 text-right tabular-nums font-medium" :class="t.profit_idr >= 0 ? 'text-success' : 'text-error'">{{ formatIDR(t.profit_idr) }}</td>
             </tr>
@@ -124,6 +124,26 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="md:hidden space-y-2">
+        <div
+          v-for="t in topTrips"
+          :key="t.trip_id"
+          class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-medium truncate">{{ t.name }}</span>
+              <span class="font-mono text-xs text-stone-400 shrink-0">{{ t.code }}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+            <span class="text-xs text-stone-500 truncate">Revenue {{ formatIDR(t.revenue_idr) }}</span>
+            <span class="font-semibold tabular-nums shrink-0" :class="t.profit_idr >= 0 ? 'text-success' : 'text-error'">{{ formatIDR(t.profit_idr) }}</span>
+          </div>
+        </div>
+        <p v-if="!topTrips.length" class="text-center text-stone-400 text-sm py-6">Belum ada data.</p>
       </div>
     </section>
   </div>

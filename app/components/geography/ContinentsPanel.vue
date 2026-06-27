@@ -51,13 +51,13 @@ async function onDelete(row: Row) {
       <UButton v-if="can('geography.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-900 text-left text-gray-500">
+        <thead class="bg-gray-100 dark:bg-gray-800/40 text-left text-gray-500 border-b border-gray-200 dark:border-gray-800">
           <tr>
-            <th class="px-3 py-2 font-medium w-24">Code</th>
-            <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 w-24"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide w-24">Code</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
+            <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -76,6 +76,23 @@ async function onDelete(row: Row) {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.name }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ row.code }}</span>
+          </div>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada data.</p>
     </div>
 
     <UModal v-model:open="open" :title="editing ? 'Edit Continent' : 'Tambah Continent'">

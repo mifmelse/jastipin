@@ -80,16 +80,16 @@ const itemCount = (l: Luggage) => l.load_items?.length ?? 0
       <UButton v-if="can('load_planning.write')" icon="i-lucide-plus" @click="openCreate">Tambah luggage</UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Label</th>
-            <th class="px-3 py-2 font-medium">Tipe</th>
-            <th class="px-3 py-2 font-medium">Traveler</th>
-            <th class="px-3 py-2 font-medium text-right">Isi</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-20"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Label</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Tipe</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Traveler</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Isi</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-20"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -113,6 +113,27 @@ const itemCount = (l: Luggage) => l.load_items?.length ?? 0
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="l in (items as Luggage[]) ?? []"
+        :key="l.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ l.label }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ l.luggage_types?.name }}</span>
+          </div>
+          <UBadge :color="luggageStatusColor(l.status)" variant="soft" class="capitalize shrink-0">{{ l.status }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ l.assigned?.full_name ?? '—' }}</span>
+          <span class="font-medium tabular-nums shrink-0">{{ itemCount(l) }} isi</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada luggage untuk trip ini.</p>
     </div>
 
     <UModal v-model:open="open" :title="editingId ? 'Edit Luggage' : 'Tambah Luggage'">

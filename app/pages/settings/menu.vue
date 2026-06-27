@@ -92,18 +92,18 @@ async function onDelete(row: Row) {
       </template>
     </PageHeader>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-900 text-left text-gray-500">
+        <thead class="bg-gray-100 dark:bg-gray-800/40 text-left text-gray-500 border-b border-gray-200 dark:border-gray-800">
           <tr>
-            <th class="px-3 py-2 font-medium w-10"></th>
-            <th class="px-3 py-2 font-medium">Label</th>
-            <th class="px-3 py-2 font-medium">Group</th>
-            <th class="px-3 py-2 font-medium">Path</th>
-            <th class="px-3 py-2 font-medium">Permission</th>
-            <th class="px-3 py-2 font-medium">Sort</th>
-            <th class="px-3 py-2 font-medium">Active</th>
-            <th class="px-3 py-2 w-20"></th>
+            <th class="px-3 py-2.5 w-10"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Label</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Group</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Path</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Permission</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Sort</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Active</th>
+            <th class="px-3 py-2.5 w-20"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -128,6 +128,28 @@ async function onDelete(row: Row) {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <UIcon :name="row.icon ?? 'i-lucide-dot'" class="size-4 text-stone-400 shrink-0" />
+            <span class="font-medium truncate">{{ row.label }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ row.path }}</span>
+          </div>
+          <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft" class="shrink-0">
+            {{ row.is_active ? 'Yes' : 'No' }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ row.menu_group ?? '—' }}</span>
+        </div>
+      </div>
     </div>
 
     <UModal v-model:open="open" :title="editing ? 'Edit Menu' : 'Tambah Menu'">

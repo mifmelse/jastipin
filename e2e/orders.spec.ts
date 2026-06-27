@@ -61,7 +61,7 @@ test('order: create → add item → derived totals → edit fee → delete', as
   await im.getByRole('button', { name: 'Simpan' }).click()
 
   // item row renders, and the order header total reflects it (derived view)
-  await expect(page.getByText('Skincare titipan')).toBeVisible()
+  await expect(page.getByText('Skincare titipan').first()).toBeVisible()
   await expect(page.getByText('Rp 200.000')).toBeVisible() // header total_idr (unique)
 
   // edit prefills the name on the FIRST open (no mode-toggle wipe)

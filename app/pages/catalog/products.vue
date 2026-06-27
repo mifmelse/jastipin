@@ -162,18 +162,18 @@ const valid = computed(
       Butuh minimal 1 Category & 1 Unit dulu sebelum bikin product.
     </p>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 font-medium">Brand</th>
-            <th class="px-3 py-2 font-medium">Category</th>
-            <th class="px-3 py-2 font-medium">Unit</th>
-            <th class="px-3 py-2 font-medium text-right">Weight (g)</th>
-            <th class="px-3 py-2 font-medium text-right">Price</th>
-            <th class="px-3 py-2 font-medium">Active</th>
-            <th class="px-3 py-2 w-24"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Brand</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Category</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Unit</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Weight (g)</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Price</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Active</th>
+            <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -188,7 +188,7 @@ const valid = computed(
             </td>
             <td class="px-3 py-2 text-stone-500">{{ row.units?.symbol ?? row.units?.name ?? '—' }}</td>
             <td class="px-3 py-2 text-right tabular-nums">{{ row.weight_g }}</td>
-            <td class="px-3 py-2 text-right tabular-nums text-stone-500">
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">
               {{ row.base_price != null ? `${row.currency} ${Number(row.base_price).toLocaleString('id-ID')}` : '—' }}
             </td>
             <td class="px-3 py-2">
@@ -208,6 +208,34 @@ const valid = computed(
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.name }}</span>
+            <span v-if="row.code" class="font-mono text-xs text-stone-400 shrink-0">{{ row.code }}</span>
+          </div>
+          <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft" class="shrink-0">
+            {{ row.is_active ? 'Yes' : 'No' }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">
+            {{ row.categories?.name }}<span v-if="row.sub_categories?.name"> / {{ row.sub_categories.name }}</span>
+          </span>
+          <span class="font-semibold text-primary tabular-nums shrink-0">
+            {{ row.base_price != null ? `${row.currency} ${Number(row.base_price).toLocaleString('id-ID')}` : '—' }}
+          </span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada produk.</p>
     </div>
 
     <UModal v-model:open="open" :title="editing ? 'Edit Product' : 'Tambah Product'" :ui="{ content: 'max-w-2xl' }">
