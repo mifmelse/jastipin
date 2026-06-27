@@ -96,15 +96,15 @@ watch(legs, (list) => {
 
     <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Code</th>
-            <th class="px-3 py-2 font-medium">Customer</th>
-            <th class="px-3 py-2 font-medium">Leg</th>
-            <th class="px-3 py-2 font-medium text-right">Items</th>
-            <th class="px-3 py-2 font-medium text-right">Total</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-16"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Code</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Leg</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Items</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Total</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-16"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -118,7 +118,7 @@ watch(legs, (list) => {
             <td class="px-3 py-2 font-medium">{{ row.customers?.name ?? '—' }}</td>
             <td class="px-3 py-2 text-stone-500">{{ legLabel(row.trip_route ?? null) }}</td>
             <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ row.item_count ?? 0 }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">{{ formatIDR(row.total_idr) }}</td>
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">{{ formatIDR(row.total_idr) }}</td>
             <td class="px-3 py-2">
               <UBadge :color="orderStatusColor(row.status)" variant="soft" class="capitalize">
                 {{ row.status.replace('_', ' ') }}
