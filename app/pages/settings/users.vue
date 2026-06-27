@@ -5,6 +5,7 @@ const { can } = useCan()
 const { items, create, update, remove } = useUsers()
 const { items: roles } = useRoles()
 const { items: userTypes } = useUserTypes()
+const me = useSupabaseUser() // can't delete your own account
 const toast = useToast()
 
 const roleOptions = computed(() =>
@@ -119,7 +120,7 @@ const canSave = computed(() =>
             <td class="px-3 py-2">
               <div class="flex justify-end gap-1">
                 <UButton v-if="can('users.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
-                <UButton v-if="can('users.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('users.delete') && row.id !== me?.id" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>

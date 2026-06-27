@@ -20,9 +20,13 @@ export interface UserCreate {
 }
 
 export function useUsers() {
+  // On SSR (e.g. a hard refresh) the internal $fetch must carry the browser's
+  // cookies, otherwise /api/users can't authenticate the caller and the table
+  // renders empty.
+  const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
   const { data: items, refresh, status } = useAsyncData<UserRow[]>(
     'settings-users',
-    () => $fetch('/api/users'),
+    () => $fetch('/api/users', { headers }),
   )
 
   async function create(payload: UserCreate) {
