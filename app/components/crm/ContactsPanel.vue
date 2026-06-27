@@ -27,6 +27,8 @@ function openCreate() {
   Object.assign(form, { name: '', phone: '', email: '', gender: NONE, country_id: NONE, notes: '' })
   open.value = true
 }
+// command-palette quick action: /operations/crm?tab=contacts&new=1
+useAutoOpen('new', openCreate)
 async function save() {
   saving.value = true
   try {

@@ -21,6 +21,8 @@ function openCreate() {
   Object.assign(form, { name: '', type: 'single', traveler_count: 1, total_capacity_kg: '', status: 'draft' })
   open.value = true
 }
+// command-palette quick action: /operations/trips?new=1
+useAutoOpen('new', openCreate)
 async function save() {
   saving.value = true
   try {

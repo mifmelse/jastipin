@@ -14,13 +14,14 @@ export const useAuthStore = defineStore('auth', () => {
   const permissions = ref<Set<string>>(new Set())
   const loaded = ref(false)
 
-  async function load() {
-    if (!user.value) return reset()
+  async function load(userId?: string) {
+    const id = userId ?? user.value?.id
+    if (!id) return reset()
 
     const { data: prof } = await supabase
       .from('profiles')
       .select('id, full_name, role, user_type, created_at')
-      .eq('id', user.value.id)
+      .eq('id', id)
       .single()
     profile.value = prof
 

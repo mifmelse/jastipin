@@ -37,6 +37,8 @@ function openCreate() {
   Object.assign(form, { customer_id: '', trip_route_id: '', currency: 'IDR', fx_rate: 1 })
   open.value = true
 }
+// command-palette quick action: /operations/orders?new=1
+useAutoOpen('new', openCreate)
 
 async function save() {
   saving.value = true
