@@ -1341,6 +1341,69 @@ export type Database = {
         }
         Relationships: []
       }
+      warehouse_items: {
+        Row: {
+          condition: string
+          created_at: string
+          height_mm: number | null
+          id: string
+          intake_at: string
+          intake_by: string | null
+          length_mm: number | null
+          location: string | null
+          notes: string | null
+          order_item_id: string
+          updated_at: string
+          weighed_g: number | null
+          width_mm: number | null
+        }
+        Insert: {
+          condition?: string
+          created_at?: string
+          height_mm?: number | null
+          id?: string
+          intake_at?: string
+          intake_by?: string | null
+          length_mm?: number | null
+          location?: string | null
+          notes?: string | null
+          order_item_id: string
+          updated_at?: string
+          weighed_g?: number | null
+          width_mm?: number | null
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          height_mm?: number | null
+          id?: string
+          intake_at?: string
+          intake_by?: string | null
+          length_mm?: number | null
+          location?: string | null
+          notes?: string | null
+          order_item_id?: string
+          updated_at?: string
+          weighed_g?: number | null
+          width_mm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouse_items_intake_by_fkey"
+            columns: ["intake_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_items_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       order_summaries: {
