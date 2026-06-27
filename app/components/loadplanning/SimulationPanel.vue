@@ -46,7 +46,7 @@ const travelerFilterOptions = computed(() => [
   ...(travelers.value ?? []).map((t) => ({ label: t.profiles?.full_name ?? '(tanpa nama)', value: t.profile_id })),
 ])
 const SORT_OPTIONS = [
-  { label: 'Nama koper', value: 'label' },
+  { label: 'Nama wadah', value: 'label' },
   { label: 'Terberat dulu', value: 'weight' },
   { label: 'Paling penuh (sisa sedikit)', value: 'remaining' },
 ]

@@ -141,7 +141,7 @@ const itemCount = (l: Luggage) => l.load_items?.length ?? 0
       <template #body>
         <div class="space-y-4">
           <UFormField label="Label" required>
-            <UInput v-model="form.label" class="w-full" placeholder="mis. Koper A" />
+            <UInput v-model="form.label" class="w-full" placeholder="mis. Koper A, Ransel B, Kabin C" />
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Tipe" required>

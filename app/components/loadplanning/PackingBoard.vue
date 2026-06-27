@@ -193,7 +193,7 @@ async function submit() {
 
     <template v-else>
       <p class="text-xs text-stone-500">
-        {{ pool.length }} barang siap dimuat di route ini. Seret kartu ke koper (pindah semua), atur jumlah dengan −/+.
+        {{ pool.length }} barang siap dimuat di route ini. Seret kartu ke wadah (pindah semua), atur jumlah dengan −/+.
       </p>
 
       <div class="flex gap-4 items-start">
@@ -232,7 +232,7 @@ async function submit() {
             <div v-for="g in luggageGroups" :key="g.key">
               <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                 <UIcon name="i-lucide-user" class="size-3.5" /> {{ g.travelerName }}
-                <span class="font-normal text-stone-400 normal-case">· {{ g.luggages.length }} koper</span>
+                <span class="font-normal text-stone-400 normal-case">· {{ g.luggages.length }} wadah</span>
               </p>
               <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 <div v-for="l in g.luggages" :key="l.id" class="lp-luggage rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
