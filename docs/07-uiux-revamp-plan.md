@@ -98,11 +98,17 @@
   `useLuggages` select ikut ambil `products(weight_g, dims)`.
 - (Foto item titipan → sudah di A3.)
 
-## FASE D — Finance: Invoice & pembayaran
-- **Company Profile** (single settings: nama usaha, logo, alamat, rekening/QRIS).
-- **Invoices persisted** (`INV-` auto, link order, terbit/jatuh-tempo, status) + **generate PDF**.
-- **Bukti pembayaran** upload di catat-bayar (→ payments.proof_url, A3).
-- Alur: Order → terbitkan invoice → kirim → catat bayar + bukti → AR/invoice lunas.
+## FASE D — Finance: Invoice & pembayaran — ✅ **SELESAI**
+- **D1** ✅ **Company Profile** (single-row `company_profile`, menu Settings admin-only):
+  nama, logo, alamat, telp/email, bank, QRIS, catatan invoice.
+- **D2** ✅ **Invoices persisted** (`INV-` auto via `set_code`, link order, terbit/jatuh-tempo,
+  status draft/sent/paid/void) + menu Finance. Tombol **"Terbitkan invoice"** di Order detail
+  (`getOrCreateForOrder` — hindari dobel). Halaman list `/finance/invoices`.
+- **PDF: print-page + Save as PDF** (keputusan user) — `/finance/invoices/[id]` pakai layout
+  `print` minimal + CSS `@media print` (toolbar `.no-print` disembunyiin); tombol "Cetak /
+  Simpan PDF" → `window.print()`. Render live order figures (total tetap derived), item drop-in
+  harga "—", info bank/QRIS dari company profile.
+- **Bukti pembayaran** upload di catat-bayar (→ payments.proof_url) — sudah di A3.
 
 ## FASE E — Dashboard
 - **Work queues** actionable ("X order siap packing → klik langsung kerja").

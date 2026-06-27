@@ -284,6 +284,17 @@ fisik belanja/terima ada di tabel sendiri agar order_items tetap bersih.
 > **`payable_settlements`** (unique per source_type+source_id; ada baris = paid).
 > Nilai tidak pernah disalin/basi; reports baca view → tidak mungkin double-count.
 
+### invoices *(BARU — D2)*
+Tagihan persisted per order (totals tetap derived; record cuma simpan kode/tanggal/status).
+- id, **code** (`INV-xxxx` auto via `set_code`), order_id → orders (cascade),
+  issued_at (date), due_at (date, nullable), status: `draft|sent|paid|void`, notes.
+- Print page `/finance/invoices/[id]` (layout `print` + `@media print`) → **Save as PDF**.
+
+### company_profile *(BARU — D1)*
+Single-row (`id = 1`) identitas usaha untuk header/footer invoice.
+- name, logo_url, address, phone, email, bank_name, bank_account, bank_holder,
+  qris_url, invoice_note. Menu di **Settings** (admin-only).
+
 ### Reports
 Tidak butuh tabel — query/aggregation di atas payments + payables + orders
 (profit per order/trip/leg, cashflow, dll).

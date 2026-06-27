@@ -505,6 +505,64 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          code: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          issued_at: string
+          notes: string | null
+          order_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          order_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          order_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "ar_per_order"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_summaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_sources: {
         Row: {
           created_at: string

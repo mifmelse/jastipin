@@ -1,12 +1,29 @@
 <script setup lang="ts">
 const route = useRoute()
+const router = useRouter()
 const id = route.params.id as string
 const { order, status, refresh } = useOrder(id)
+const { can } = useCan()
+const { getOrCreateForOrder } = useInvoices()
+const toast = useToast()
 
 const tabs = [
   { label: 'Order Info', slot: 'info' as const, icon: 'i-lucide-receipt' },
   { label: 'Items', slot: 'items' as const, icon: 'i-lucide-package' },
 ]
+
+const issuing = ref(false)
+async function issueInvoice() {
+  issuing.value = true
+  try {
+    const inv = await getOrCreateForOrder(id)
+    if (inv?.id) router.push(`/finance/invoices/${inv.id}`)
+  } catch (e) {
+    toast.add({ title: 'Gagal menerbitkan invoice', description: (e as Error).message, color: 'error' })
+  } finally {
+    issuing.value = false
+  }
+}
 </script>
 
 <template>
@@ -29,6 +46,9 @@ const tabs = [
         </template>
         <template #meta>
           <span class="font-semibold text-primary">{{ formatIDR(order.total_idr) }}</span>
+        </template>
+        <template #actions>
+          <UButton v-if="can('invoices.write')" icon="i-lucide-file-text" size="sm" :loading="issuing" @click="issueInvoice">Terbitkan invoice</UButton>
         </template>
       </DetailHeader>
 
