@@ -7,10 +7,7 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Warehouse</h1>
-      <p class="text-sm text-stone-500">Barang diam di gudang — intake, timbang aktual, stok, kondisi.</p>
-    </div>
+    <PageHeader title="Warehouse" subtitle="Barang diam di gudang — intake, timbang aktual, stok, kondisi." icon="i-lucide-warehouse" />
 
     <UTabs :items="tabs" class="w-full">
       <template #intake><WarehouseIntakePanel /></template>

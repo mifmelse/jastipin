@@ -25,12 +25,13 @@ const tabs = [
     <div v-if="status === 'pending'" class="text-sm text-stone-400">Memuat…</div>
     <div v-else-if="!trip" class="text-sm text-stone-400">Trip tidak ditemukan.</div>
     <template v-else>
-      <div class="flex flex-wrap items-center gap-3">
-        <h1 class="text-xl font-semibold">{{ trip.name }}</h1>
-        <span class="font-mono text-xs text-stone-400">{{ trip.code }}</span>
-        <UBadge color="neutral" variant="soft">{{ trip.type }}</UBadge>
-        <UBadge :color="tripStatusColor(trip.status)" variant="soft">{{ trip.status }}</UBadge>
-      </div>
+      <PageHeader :title="trip.name" icon="i-lucide-plane">
+        <template #actions>
+          <span class="font-mono text-xs text-stone-400">{{ trip.code }}</span>
+          <UBadge color="neutral" variant="soft">{{ trip.type }}</UBadge>
+          <UBadge :color="tripStatusColor(trip.status)" variant="soft">{{ trip.status }}</UBadge>
+        </template>
+      </PageHeader>
 
       <UTabs :items="tabs" class="w-full">
         <template #overview>

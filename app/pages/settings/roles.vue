@@ -5,6 +5,7 @@ type Role = Database['public']['Tables']['roles']['Row'] & {
   role_permissions: { count: number }[]
 }
 
+const { can } = useCan()
 const { items, create, update, remove, getPermissionIds, savePermissions } = useRoles()
 const { items: permissions } = usePermissions()
 const toast = useToast()
@@ -88,13 +89,11 @@ async function savePerms() {
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-semibold">Roles</h1>
-        <p class="text-sm text-gray-500">Peran + permission yang menyetir sidebar.</p>
-      </div>
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
-    </div>
+    <PageHeader title="Roles" subtitle="Peran + permission yang menyetir sidebar." icon="i-lucide-shield">
+      <template #actions>
+        <UButton v-if="can('roles.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
+      </template>
+    </PageHeader>
 
     <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
       <table class="w-full text-sm">
@@ -118,8 +117,8 @@ async function savePerms() {
                 <UButton size="xs" color="primary" variant="soft" icon="i-lucide-key" @click="openPermissions(row)">
                   Permissions
                 </UButton>
-                <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('roles.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
+                <UButton v-if="can('roles.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>

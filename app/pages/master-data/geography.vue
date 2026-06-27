@@ -7,10 +7,7 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Geography</h1>
-      <p class="text-sm text-gray-500">Master data benua & negara.</p>
-    </div>
+    <PageHeader title="Geography" subtitle="Master data benua & negara." icon="i-lucide-globe" />
 
     <UTabs :items="tabs" class="w-full">
       <template #continents>

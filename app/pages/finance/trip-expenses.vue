@@ -21,13 +21,11 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-end justify-between gap-2">
-      <div>
-        <h1 class="text-xl font-semibold">Trip Expenses</h1>
-        <p class="text-sm text-stone-500">Biaya operasional trip — dikelola di modul Trip, masuk ke Payables.</p>
-      </div>
-      <span class="text-sm text-stone-500">Total: <span class="font-semibold">{{ formatIDR(total) }}</span></span>
-    </div>
+    <PageHeader title="Trip Expenses" subtitle="Biaya operasional trip — dikelola di modul Trip, masuk ke Payables." icon="i-lucide-receipt">
+      <template #actions>
+        <span class="text-sm text-stone-500">Total: <span class="font-semibold">{{ formatIDR(total) }}</span></span>
+      </template>
+    </PageHeader>
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">

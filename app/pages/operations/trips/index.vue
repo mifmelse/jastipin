@@ -3,6 +3,7 @@ import type { Database } from '~/types/database.types'
 
 type TripRow = Database['public']['Tables']['trips']['Row']
 
+const { can } = useCan()
 const { items, create, remove } = useTrips()
 const toast = useToast()
 const router = useRouter()
@@ -54,13 +55,11 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-semibold">Trips</h1>
-        <p class="text-sm text-stone-500">Perjalanan jastip — container semua aktivitas.</p>
-      </div>
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
-    </div>
+    <PageHeader title="Trips" subtitle="Perjalanan jastip — container semua aktivitas." icon="i-lucide-plane">
+      <template #actions>
+        <UButton v-if="can('trips.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
+      </template>
+    </PageHeader>
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
@@ -92,7 +91,7 @@ const legCount = (row: { trip_routes?: { count: number }[] }) => row.trip_routes
             </td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end">
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('trips.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>

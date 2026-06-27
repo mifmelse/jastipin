@@ -7,10 +7,7 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Categories</h1>
-      <p class="text-sm text-stone-500">Kategori produk & turunannya.</p>
-    </div>
+    <PageHeader title="Categories" subtitle="Kategori produk & turunannya." icon="i-lucide-folder-tree" />
 
     <UTabs :items="tabs" class="w-full">
       <template #categories>

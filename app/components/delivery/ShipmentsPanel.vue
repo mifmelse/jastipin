@@ -5,6 +5,7 @@ type Shipment = Database['public']['Tables']['shipments']['Row'] & {
   orders?: { code: string | null; status: string; customers?: { name: string } | null; trip_route?: LegEmbed } | null
 }
 
+const { can } = useCan()
 const { items, create, update, remove } = useShipments()
 const { items: orders } = useOrders()
 const toast = useToast()
@@ -85,7 +86,7 @@ async function onDelete(s: Shipment) {
 <template>
   <div class="space-y-3">
     <div class="flex justify-end">
-      <UButton icon="i-lucide-plus" @click="openCreate">Buat shipment</UButton>
+      <UButton v-if="can('delivery.write')" icon="i-lucide-plus" @click="openCreate">Buat shipment</UButton>
     </div>
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
@@ -113,8 +114,8 @@ async function onDelete(s: Shipment) {
             </td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end gap-1">
-                <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" aria-label="Edit shipment" @click="openEdit(s)" />
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus shipment" @click="onDelete(s)" />
+                <UButton v-if="can('delivery.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" aria-label="Edit shipment" @click="openEdit(s)" />
+                <UButton v-if="can('delivery.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus shipment" @click="onDelete(s)" />
               </div>
             </td>
           </tr>

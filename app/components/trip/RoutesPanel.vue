@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { can } = useCan()
 const props = defineProps<{ tripId: string; tripType: string }>()
 const { items, create, createMany, remove, refresh } = useTripRoutes(props.tripId)
 const { items: countries } = useCountries()
@@ -88,7 +89,7 @@ const valid = computed(
   <div class="space-y-4">
     <div class="flex items-center justify-between gap-3">
       <p class="text-sm text-stone-500">{{ hint }}</p>
-      <UButton icon="i-lucide-plus" :disabled="!canAdd" @click="openAdd">
+      <UButton v-if="can('trips.write')" icon="i-lucide-plus" :disabled="!canAdd" @click="openAdd">
         {{ isRound ? 'Tambah rute' : 'Tambah leg' }}
       </UButton>
     </div>
@@ -112,7 +113,7 @@ const valid = computed(
             <td class="px-3 py-2 text-stone-500">{{ row.departure_date ?? '—' }}</td>
             <td class="px-3 py-2">
               <div class="flex justify-end">
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('trips.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>
