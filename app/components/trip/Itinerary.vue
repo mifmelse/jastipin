@@ -56,7 +56,7 @@ async function onDelete(row: Row) {
       <div
         v-for="row in items"
         :key="row.id"
-        class="rounded-lg border border-stone-200 dark:border-stone-800 p-3 flex items-start justify-between gap-3"
+        class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 flex items-start justify-between gap-3"
       >
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">

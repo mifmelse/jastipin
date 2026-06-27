@@ -22,7 +22,7 @@ const linkClass = (path: string | null) =>
 </script>
 
 <template>
-  <div class="min-h-screen bg-stone-100 dark:bg-stone-950">
+  <div class="min-h-screen bg-stone-50 dark:bg-stone-950">
     <!-- mobile backdrop -->
     <div
       v-if="sidebarOpen"
@@ -75,7 +75,7 @@ const linkClass = (path: string | null) =>
         />
 
         <button
-          class="flex min-w-0 flex-1 max-w-md items-center gap-2 h-9 rounded-lg border border-stone-200 dark:border-stone-800 px-3 text-sm text-stone-400 hover:border-stone-300 dark:hover:border-stone-700 transition-colors"
+          class="flex min-w-0 flex-1 max-w-md items-center gap-2 h-9 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 text-sm text-stone-400 hover:border-stone-300 dark:hover:border-stone-700 transition-colors"
           aria-label="Cari (Command-K)"
           @click="cmdkOpen = true"
         >

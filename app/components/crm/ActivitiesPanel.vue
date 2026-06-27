@@ -20,7 +20,7 @@ const fmt = (s: string) => new Date(s).toLocaleString('id-ID', { dateStyle: 'med
       <div
         v-for="a in (items as Activity[])"
         :key="a.id"
-        class="rounded-lg border border-stone-200 dark:border-stone-800 p-3"
+        class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3"
       >
         <div class="flex flex-wrap items-center gap-2 text-xs text-stone-500">
           <UBadge color="neutral" variant="soft">{{ a.type }}</UBadge>

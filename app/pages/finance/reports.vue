@@ -29,7 +29,7 @@ const kpis = computed(() => [
     <PageHeader title="Reports" subtitle="Cashflow, piutang/hutang, dan profit per trip." icon="i-lucide-chart-bar" />
 
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-      <div v-for="k in kpis" :key="k.label" class="rounded-lg border border-stone-200 dark:border-stone-800 p-3">
+      <div v-for="k in kpis" :key="k.label" class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3">
         <p class="text-xs text-stone-500">{{ k.label }}</p>
         <p class="text-lg font-semibold tabular-nums mt-1" :class="k.color">{{ formatIDR(k.value) }}</p>
       </div>

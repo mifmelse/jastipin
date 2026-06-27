@@ -51,7 +51,7 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
         v-for="k in kpis"
         :key="k.label"
         :to="k.to"
-        class="rounded-lg border border-stone-200 dark:border-stone-800 p-3 hover:border-primary/50 transition-colors"
+        class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 hover:border-primary/50 transition-colors"
       >
         <p class="text-xs text-stone-500">{{ k.label }}</p>
         <p class="text-lg font-semibold tabular-nums mt-1" :class="k.tone">{{ k.value }}</p>
@@ -61,7 +61,7 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
     <div class="grid gap-6 lg:grid-cols-2">
       <section class="space-y-2">
         <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Order berjalan</h2>
-        <div class="rounded-lg border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800">
           <NuxtLink
             v-for="s in orderByStatus"
             :key="s.status"
@@ -77,7 +77,7 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
 
       <section class="space-y-2">
         <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Trip aktif</h2>
-        <div class="rounded-lg border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800">
           <NuxtLink
             v-for="t in activeTrips"
             :key="t.id"
