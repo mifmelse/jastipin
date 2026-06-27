@@ -72,9 +72,9 @@ const fmt = (n: number | null) => `${form.currency} ${Number(n ?? 0).toLocaleStr
 </script>
 
 <template>
-  <div class="grid gap-6 lg:grid-cols-3">
-    <div class="lg:col-span-2 space-y-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+  <div class="grid gap-8 lg:grid-cols-2 lg:gap-12">
+    <div class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <UFormField label="Status">
           <USelect v-model="form.status" :items="ORDER_STATUS_OPTIONS" class="w-full" />
         </UFormField>
