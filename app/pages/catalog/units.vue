@@ -1,11 +1,35 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['units']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useUnits()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useUnits()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((u) => ({ name: u.name, symbol: u.symbol ?? '', is_active: u.is_active }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((u) => u.name))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const symbol = String(r.symbol ?? '').trim() || null
+    const { error } = await supabase.from('units').upsert({ name, symbol, is_active: activeCell(r.is_active) }, { onConflict: 'name' })
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -49,6 +73,13 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Units" subtitle="Satuan produk (pcs, box, pair, …)." icon="i-lucide-ruler">
       <template #actions>
+        <ExcelToolbar
+          filename="units"
+          :export-rows="exportRows"
+          :import-rows="importRows"
+          :can-export="can('units.read')"
+          :can-import="can('units.write')"
+        />
         <UButton v-if="can('units.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

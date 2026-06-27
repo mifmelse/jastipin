@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['products']['Row']
 
@@ -149,12 +151,85 @@ async function onDelete(row: Row) {
 const valid = computed(
   () => form.name.trim() && form.category_id && form.unit_id && Number(form.weight_g) > 0,
 )
+
+// --- Excel export/import (FK resolved by name) ---
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((p) => ({
+    name: p.name,
+    code: p.code ?? '',
+    brand: p.brands?.name ?? '',
+    category: p.categories?.name ?? '',
+    sub_category: p.sub_categories?.name ?? '',
+    unit: p.units?.name ?? '',
+    country: p.countries?.name ?? '',
+    weight_g: p.weight_g,
+    length_mm: p.length_mm,
+    width_mm: p.width_mm,
+    height_mm: p.height_mm,
+    base_price: p.base_price,
+    cost_price: p.cost_price,
+    currency: p.currency,
+    is_active: p.is_active,
+  }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const cat = matchByName(categories.value, r.category)
+    if (!cat) { report.errors.push({ row: rowNo, message: `category '${r.category ?? ''}' tidak ada di master` }); continue }
+    const unit = matchByName(units.value, r.unit)
+    if (!unit) { report.errors.push({ row: rowNo, message: `unit '${r.unit ?? ''}' tidak ada di master` }); continue }
+    const weight = Number(r.weight_g)
+    if (!weight || weight <= 0) { report.errors.push({ row: rowNo, message: 'weight_g harus > 0' }); continue }
+    const brand = r.brand ? matchByName(brands.value, r.brand) : undefined
+    if (r.brand && !brand) { report.errors.push({ row: rowNo, message: `brand '${r.brand}' tidak ada di master` }); continue }
+    const sub = r.sub_category ? matchByName(subCategories.value, r.sub_category) : undefined
+    if (r.sub_category && !sub) { report.errors.push({ row: rowNo, message: `sub_category '${r.sub_category}' tidak ada di master` }); continue }
+    const country = r.country ? matchByName(countries.value, r.country) : undefined
+    if (r.country && !country) { report.errors.push({ row: rowNo, message: `country '${r.country}' tidak ada di master` }); continue }
+    try {
+      await create({
+        name,
+        category_id: cat.id,
+        unit_id: unit.id,
+        brand_id: brand?.id ?? null,
+        sub_category_id: sub?.id ?? null,
+        country_id: country?.id ?? null,
+        weight_g: weight,
+        length_mm: numOrNull(numCell(r.length_mm)),
+        width_mm: numOrNull(numCell(r.width_mm)),
+        height_mm: numOrNull(numCell(r.height_mm)),
+        base_price: numOrNull(numCell(r.base_price)),
+        cost_price: numOrNull(numCell(r.cost_price)),
+        currency: String(r.currency || 'IDR'),
+        description: null,
+        image_url: null,
+        is_active: activeCell(r.is_active),
+      })
+      report.inserted++
+    } catch (e) {
+      report.errors.push({ row: rowNo, message: (e as Error).message })
+    }
+  }
+  return report
+}
 </script>
 
 <template>
   <div class="space-y-4">
     <PageHeader title="Products" subtitle="Katalog produk. Berat (gram) wajib untuk packing." icon="i-lucide-package">
       <template #actions>
+        <ExcelToolbar
+          filename="products"
+          :export-rows="exportRows"
+          :import-rows="importRows"
+          :can-export="can('products.read')"
+          :can-import="can('products.write')"
+        />
         <UButton v-if="can('products.write')" icon="i-lucide-plus" :disabled="!(categories?.length) || !(units?.length)" @click="openCreate">
           Tambah
         </UButton>

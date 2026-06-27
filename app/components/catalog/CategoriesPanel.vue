@@ -1,11 +1,35 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['categories']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useCategories()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useCategories()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((c) => ({ name: c.name, description: c.description ?? '', is_active: c.is_active }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((c) => c.name))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const description = String(r.description ?? '').trim() || null
+    const { error } = await supabase.from('categories').upsert({ name, description, is_active: activeCell(r.is_active) }, { onConflict: 'name' })
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -47,7 +71,14 @@ async function onDelete(row: Row) {
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+      <ExcelToolbar
+        filename="categories"
+        :export-rows="exportRows"
+        :import-rows="importRows"
+        :can-export="can('categories.read')"
+        :can-import="can('categories.write')"
+      />
       <UButton v-if="can('categories.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 

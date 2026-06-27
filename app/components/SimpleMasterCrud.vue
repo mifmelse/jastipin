@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import type { Database } from '~/types/database.types'
 import type { MasterTable, MasterRow } from '~/composables/useSimpleMaster'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 // Reusable CRUD for the uniform {name, is_active} A4 masters. One file drives
 // all five pages; each page is just a thin wrapper passing table + labels.
@@ -12,8 +15,37 @@ const props = defineProps<{
 }>()
 
 const { can } = useCan()
-const { items, create, update, remove } = useSimpleMaster(props.table)
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useSimpleMaster(props.table)
 const toast = useToast()
+
+// Excel export = current rows; import = upsert by name (idempotent re-seed).
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((r) => ({ name: r.name, is_active: r.is_active }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((r) => r.name))
+  for (let i = 0; i < rows.length; i++) {
+    const rowNo = i + 2 // +1 header, +1 to 1-index
+    const name = String(rows[i]!.name ?? '').trim()
+    if (!name) {
+      report.errors.push({ row: rowNo, message: 'Kolom name kosong' })
+      continue
+    }
+    const raw = rows[i]!.is_active
+    const is_active = !(raw === false || String(raw).toLowerCase() === 'false' || String(raw) === '0')
+    const { error } = await supabase.from(props.table).upsert({ name, is_active }, { onConflict: 'name' })
+    if (error) {
+      report.errors.push({ row: rowNo, message: error.message })
+      continue
+    }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -57,6 +89,13 @@ async function onDelete(row: MasterRow) {
   <div class="space-y-4">
     <PageHeader :title="title" :subtitle="subtitle" :icon="icon">
       <template #actions>
+        <ExcelToolbar
+          :filename="table"
+          :export-rows="exportRows"
+          :import-rows="importRows"
+          :can-export="can(`${permission}.read`)"
+          :can-import="can(`${permission}.write`)"
+        />
         <UButton v-if="can(`${permission}.write`)" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ExcelRow } from '~/composables/useExcel'
+
 type Ar = { paid_idr: number; outstanding_idr: number }
 type Payable = { amount_idr: number; status: string }
 type Pnl = { trip_id: string; code: string | null; name: string; revenue_idr: number; cost_idr: number; profit_idr: number }
@@ -22,6 +24,17 @@ const kpis = computed(() => [
   { label: 'Piutang (AR) belum tertagih', value: arOutstanding.value, color: 'text-warning' },
   { label: 'Hutang (AP) belum dibayar', value: apUnpaid.value, color: 'text-warning' },
 ])
+
+// Reports are export-only.
+function exportPnl(): ExcelRow[] {
+  return ((pnl.value as Pnl[]) ?? []).map((t) => ({
+    code: t.code ?? '',
+    trip: t.name,
+    revenue_idr: t.revenue_idr,
+    cost_idr: t.cost_idr,
+    profit_idr: t.profit_idr,
+  }))
+}
 </script>
 
 <template>
@@ -36,7 +49,10 @@ const kpis = computed(() => [
     </div>
 
     <div>
-      <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-2">Profit per trip</h2>
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Profit per trip</h2>
+        <ExcelToolbar filename="report-trip-pnl" :export-rows="exportPnl" />
+      </div>
       <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
         <table class="w-full text-sm">
           <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">

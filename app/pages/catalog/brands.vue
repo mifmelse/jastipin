@@ -1,12 +1,40 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['brands']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useBrands()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useBrands()
 const { items: countries } = useCountries()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((b) => ({ name: b.name, country: b.countries?.name ?? '', is_active: b.is_active }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((b) => b.name))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const country = r.country ? matchByName(countries.value, r.country) : undefined
+    if (r.country && !country) { report.errors.push({ row: rowNo, message: `country '${r.country}' tidak ada` }); continue }
+    const { error } = await supabase.from('brands').upsert(
+      { name, country_id: country?.id ?? null, is_active: activeCell(r.is_active) },
+      { onConflict: 'name' },
+    )
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const countryOptions = computed(() => [
   { label: '— none —', value: NONE },
@@ -55,6 +83,13 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Brands" subtitle="Merek produk." icon="i-lucide-tag">
       <template #actions>
+        <ExcelToolbar
+          filename="brands"
+          :export-rows="exportRows"
+          :import-rows="importRows"
+          :can-export="can('brands.read')"
+          :can-import="can('brands.write')"
+        />
         <UButton v-if="can('brands.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

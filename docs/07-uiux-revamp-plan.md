@@ -60,7 +60,13 @@
 - Pola seragam: **header card** (avatar/nama + info kunci + badge) + **tombol primer** kanan-atas,
   destructive dipisah; body = section/tab card putih. Terapkan ke **Customer detail** + **Order detail (Info)**.
 
-**A6. Export/Import Excel** *(reusable, butuh lib `xlsx`/SheetJS)*
+**A6. Export/Import Excel** *(reusable, lib `xlsx`/SheetJS)* — ✅ **SELESAI**
+> ⚠️ **Follow-up keamanan:** terpasang `xlsx@0.18.5` dari registry npm (ada CVE
+> prototype-pollution/ReDoS). Risiko kecil (tool internal, file operator sendiri), tapi
+> ganti ke versi CDN resmi `xlsx@0.20.x` (`npm i https://cdn.sheetjs.com/...`) saat network
+> mengizinkan. Reusable: `useExcel` + `ExcelToolbar` + util `matchByName/numCell/activeCell`.
+> Wired: 5 master A4 (via SimpleMasterCrud), Catalog (Brands, Categories, Units, **Products**
+> 5-FK-by-name), Reports (export-only).
 - Util + komponen export (tabel → `.xlsx`) & import (upload → **validasi** → **upsert** →
   **resolusi FK by-name** → laporan error per-baris). Terapkan ke semua master + **Catalog**
   (Brands, Categories, **Products** = paling berat: 5 FK by-name). **Reports = export-only.**
