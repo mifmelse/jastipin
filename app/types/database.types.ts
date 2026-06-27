@@ -70,6 +70,51 @@ export type Database = {
         }
         Relationships: []
       }
+      company_profile: {
+        Row: {
+          address: string | null
+          bank_account: string | null
+          bank_holder: string | null
+          bank_name: string | null
+          email: string | null
+          id: number
+          invoice_note: string | null
+          logo_url: string | null
+          name: string
+          phone: string | null
+          qris_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          bank_account?: string | null
+          bank_holder?: string | null
+          bank_name?: string | null
+          email?: string | null
+          id?: number
+          invoice_note?: string | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          qris_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          bank_account?: string | null
+          bank_holder?: string | null
+          bank_name?: string | null
+          email?: string | null
+          id?: number
+          invoice_note?: string | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          qris_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       continents: {
         Row: {
           code: string
