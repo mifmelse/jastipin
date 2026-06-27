@@ -6,21 +6,22 @@ const { customer, status } = useCustomer(id)
 
 <template>
   <div class="space-y-4">
-    <NuxtLink
-      to="/operations/crm"
-      class="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-primary"
-    >
-      <UIcon name="i-lucide-arrow-left" class="size-4" /> CRM
-    </NuxtLink>
-
     <div v-if="status === 'pending'" class="text-sm text-stone-400">Memuat…</div>
     <div v-else-if="!customer" class="text-sm text-stone-400">Customer tidak ditemukan.</div>
     <template v-else>
-      <PageHeader :title="customer.name" icon="i-lucide-user">
-        <template #actions>
-          <span v-if="customer.phone" class="text-sm text-stone-500">{{ customer.phone }}</span>
+      <DetailHeader
+        back="/operations/crm"
+        back-label="CRM"
+        :title="customer.name"
+        :subtitle="customer.phone ?? customer.email ?? undefined"
+        :avatar-url="customer.image_url"
+        icon="i-lucide-user"
+        rounded="rounded-full"
+      >
+        <template #meta>
+          <span class="text-stone-500">{{ customer.countries?.name ?? '—' }}</span>
         </template>
-      </PageHeader>
+      </DetailHeader>
 
       <div class="grid gap-6 lg:grid-cols-2">
         <section class="space-y-3">

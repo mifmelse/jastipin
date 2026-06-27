@@ -56,7 +56,7 @@
   `payment_methods` (Receivables). Ganti input free-text jadi select dari master.
 - Tempatkan di grup **Master Data** (menu).
 
-**A5. Pola detail-page**
+**A5. Pola detail-page** — ✅ **SELESAI** (komponen `DetailHeader`)
 - Pola seragam: **header card** (avatar/nama + info kunci + badge) + **tombol primer** kanan-atas,
   destructive dipisah; body = section/tab card putih. Terapkan ke **Customer detail** + **Order detail (Info)**.
 
