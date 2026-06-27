@@ -13,6 +13,13 @@ let admin: SupabaseClient
 test.beforeAll(async () => {
   admin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!, { auth: { persistSession: false } })
 
+  // ensure the zero-permission 'customer' role exists — profiles.role is now a FK
+  // to roles, and this shared dev DB occasionally loses non-core roles
+  await admin.from('roles').upsert(
+    { name: 'customer', description: 'Eksternal — tanpa akses internal' },
+    { onConflict: 'name', ignoreDuplicates: true },
+  )
+
   // user with a role that has zero permissions
   await admin.auth.admin.createUser({
     email: NOPERM, password: PASSWORD, email_confirm: true,
