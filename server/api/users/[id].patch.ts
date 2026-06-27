@@ -3,7 +3,7 @@ import type { Database } from '~/types/database.types'
 
 // Update a user's profile (role / full_name / user_type).
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, 'users.write')
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, statusMessage: 'id wajib' })
 

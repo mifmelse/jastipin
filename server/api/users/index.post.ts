@@ -3,7 +3,7 @@ import type { Database } from '~/types/database.types'
 
 // Create a new user. The profiles trigger fills role/full_name from metadata.
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, 'users.write')
   const body = await readBody<{
     email: string
     password: string
