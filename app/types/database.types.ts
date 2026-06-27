@@ -989,6 +989,73 @@ export type Database = {
         }
         Relationships: []
       }
+      shipments: {
+        Row: {
+          courier: string | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          order_id: string
+          proof_url: string | null
+          recipient_signed: boolean
+          shipped_at: string | null
+          status: string
+          tracking_no: string | null
+          trip_route_id: string
+          updated_at: string
+        }
+        Insert: {
+          courier?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          order_id: string
+          proof_url?: string | null
+          recipient_signed?: boolean
+          shipped_at?: string | null
+          status?: string
+          tracking_no?: string | null
+          trip_route_id: string
+          updated_at?: string
+        }
+        Update: {
+          courier?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          order_id?: string
+          proof_url?: string | null
+          recipient_signed?: boolean
+          shipped_at?: string | null
+          status?: string
+          tracking_no?: string | null
+          trip_route_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_summaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_trip_route_id_fkey"
+            columns: ["trip_route_id"]
+            isOneToOne: false
+            referencedRelation: "trip_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sourcing_records: {
         Row: {
           actual_price: number | null
