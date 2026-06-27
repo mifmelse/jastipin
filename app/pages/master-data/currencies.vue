@@ -1,11 +1,38 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['currencies']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useCurrencies()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useCurrencies()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((c) => ({ code: c.code, name: c.name, symbol: c.symbol ?? '', is_active: c.is_active }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((c) => c.code))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const code = String(r.code ?? '').trim().toUpperCase()
+    const name = String(r.name ?? '').trim()
+    if (!code || !name) { report.errors.push({ row: rowNo, message: 'code & name wajib' }); continue }
+    const { error } = await supabase.from('currencies').upsert(
+      { code, name, symbol: String(r.symbol ?? '').trim() || null, is_active: activeCell(r.is_active) },
+      { onConflict: 'code' },
+    )
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(code)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -54,6 +81,7 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Currencies" subtitle="Mata uang. Base pelaporan = IDR." icon="i-lucide-coins">
       <template #actions>
+        <ExcelToolbar filename="currencies" :export-rows="exportRows" :import-rows="importRows" :can-export="can('currencies.read')" :can-import="can('currencies.write')" />
         <UButton v-if="can('currencies.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

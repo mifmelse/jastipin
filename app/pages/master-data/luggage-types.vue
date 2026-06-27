@@ -1,11 +1,61 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['luggage_types']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useLuggageTypes()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useLuggageTypes()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((l) => ({
+    name: l.name,
+    category: l.category,
+    max_weight_g: l.max_weight_g,
+    tare_weight_g: l.tare_weight_g,
+    max_volume_cm3: l.max_volume_cm3,
+    inner_length_mm: l.inner_length_mm,
+    inner_width_mm: l.inner_width_mm,
+    inner_height_mm: l.inner_height_mm,
+    regulation_note: l.regulation_note ?? '',
+    is_active: l.is_active,
+  }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((l) => l.name))
+  const CATS = ['checked', 'cabin', 'personal']
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const category = String(r.category ?? '').trim().toLowerCase()
+    if (!CATS.includes(category)) { report.errors.push({ row: rowNo, message: `category harus salah satu dari ${CATS.join('/')}` }); continue }
+    const maxW = Number(r.max_weight_g)
+    if (!maxW || maxW <= 0) { report.errors.push({ row: rowNo, message: 'max_weight_g harus > 0' }); continue }
+    const { error } = await supabase.from('luggage_types').upsert({
+      name,
+      category,
+      max_weight_g: maxW,
+      tare_weight_g: Number(r.tare_weight_g) || 0,
+      max_volume_cm3: numCell(r.max_volume_cm3) === '' ? null : Number(r.max_volume_cm3),
+      inner_length_mm: numCell(r.inner_length_mm) === '' ? null : Number(r.inner_length_mm),
+      inner_width_mm: numCell(r.inner_width_mm) === '' ? null : Number(r.inner_width_mm),
+      inner_height_mm: numCell(r.inner_height_mm) === '' ? null : Number(r.inner_height_mm),
+      regulation_note: String(r.regulation_note ?? '').trim() || null,
+      is_active: activeCell(r.is_active),
+    }, { onConflict: 'name' })
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const CATEGORY_OPTIONS = [
   { label: 'Checked', value: 'checked' },
@@ -94,6 +144,7 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Luggage Types" subtitle="Master wadah angkut. Berat dalam gram, dimensi dalam mm." icon="i-lucide-briefcase">
       <template #actions>
+        <ExcelToolbar filename="luggage-types" :export-rows="exportRows" :import-rows="importRows" :can-export="can('luggage_types.read')" :can-import="can('luggage_types.write')" />
         <UButton v-if="can('luggage_types.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

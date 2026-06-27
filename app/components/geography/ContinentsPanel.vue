@@ -1,11 +1,35 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['continents']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useContinents()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useContinents()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((c) => ({ code: c.code, name: c.name }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((c) => c.code))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const code = String(r.code ?? '').trim().toUpperCase()
+    const name = String(r.name ?? '').trim()
+    if (!code || !name) { report.errors.push({ row: rowNo, message: 'code & name wajib' }); continue }
+    const { error } = await supabase.from('continents').upsert({ code, name }, { onConflict: 'code' })
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(code)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -47,7 +71,8 @@ async function onDelete(row: Row) {
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+      <ExcelToolbar filename="continents" :export-rows="exportRows" :import-rows="importRows" :can-export="can('geography.read')" :can-import="can('geography.write')" />
       <UButton v-if="can('geography.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 

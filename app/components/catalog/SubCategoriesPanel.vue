@@ -1,16 +1,48 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
-type Row = Database['public']['Tables']['sub_categories']['Row']
+type Row = Database['public']['Tables']['sub_categories']['Row'] & { categories?: { name: string } | null }
 
 const { can } = useCan()
-const { items, create, update, remove } = useSubCategories()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useSubCategories()
 const { items: categories } = useCategories()
 const toast = useToast()
 
 const categoryOptions = computed(() =>
   (categories.value ?? []).map((c) => ({ label: c.name, value: c.id })),
 )
+
+function exportRows(): ExcelRow[] {
+  return ((items.value as Row[]) ?? []).map((s) => ({
+    category: s.categories?.name ?? '',
+    name: s.name,
+    is_active: s.is_active,
+  }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set(((items.value as Row[]) ?? []).map((s) => `${s.category_id}|${s.name}`))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const cat = matchByName(categories.value, r.category)
+    if (!cat) { report.errors.push({ row: rowNo, message: `category '${r.category ?? ''}' tidak ada` }); continue }
+    const { error } = await supabase.from('sub_categories').upsert(
+      { category_id: cat.id, name, is_active: activeCell(r.is_active) },
+      { onConflict: 'category_id,name' },
+    )
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(`${cat.id}|${name}`)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -54,7 +86,8 @@ const valid = computed(() => form.name.trim() && form.category_id)
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+      <ExcelToolbar filename="sub-categories" :export-rows="exportRows" :import-rows="importRows" :can-export="can('categories.read')" :can-import="can('categories.write')" />
       <UButton v-if="can('categories.write')" icon="i-lucide-plus" :disabled="!(categories?.length)" @click="openCreate">Tambah</UButton>
     </div>
 

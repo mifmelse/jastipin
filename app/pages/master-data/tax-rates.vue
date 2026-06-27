@@ -1,11 +1,36 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['tax_rates']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useTaxRates()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useTaxRates()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((t) => ({ name: t.name, rate: t.rate, is_active: t.is_active }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((t) => t.name))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const rate = Number(r.rate)
+    if (Number.isNaN(rate)) { report.errors.push({ row: rowNo, message: 'rate harus angka' }); continue }
+    const { error } = await supabase.from('tax_rates').upsert({ name, rate, is_active: activeCell(r.is_active) }, { onConflict: 'name' })
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -49,6 +74,7 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Tax Rates" subtitle="Tarif pajak (mis. PPN 11%). Dipakai saat hitung total order." icon="i-lucide-percent">
       <template #actions>
+        <ExcelToolbar filename="tax-rates" :export-rows="exportRows" :import-rows="importRows" :can-export="can('tax_rates.read')" :can-import="can('tax_rates.write')" />
         <UButton v-if="can('tax_rates.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

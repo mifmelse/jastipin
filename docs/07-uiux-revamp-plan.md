@@ -65,8 +65,10 @@
 > prototype-pollution/ReDoS). Risiko kecil (tool internal, file operator sendiri), tapi
 > ganti ke versi CDN resmi `xlsx@0.20.x` (`npm i https://cdn.sheetjs.com/...`) saat network
 > mengizinkan. Reusable: `useExcel` + `ExcelToolbar` + util `matchByName/numCell/activeCell`.
-> Wired: 5 master A4 (via SimpleMasterCrud), Catalog (Brands, Categories, Units, **Products**
-> 5-FK-by-name), Reports (export-only).
+> Wired ke **SEMUA master + Catalog**: 5 master A4 (via SimpleMasterCrud), Currencies (key=code),
+> Tax Rates (+migration unique name), Luggage Types, Geography (Continents key=code, Countries
+> FK continent-by-code + key=iso2), Catalog (Brands, Categories, Units, Sub-categories
+> composite-key, **Products** 5-FK-by-name). Reports = export-only.
 - Util + komponen export (tabel → `.xlsx`) & import (upload → **validasi** → **upsert** →
   **resolusi FK by-name** → laporan error per-baris). Terapkan ke semua master + **Catalog**
   (Brands, Categories, **Products** = paling berat: 5 FK by-name). **Reports = export-only.**

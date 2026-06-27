@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['countries']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useCountries()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useCountries()
 const { items: continents } = useContinents()
 const toast = useToast()
 
@@ -13,6 +16,45 @@ const continentOptions = computed(() =>
 )
 const continentName = (id: string) =>
   continents.value?.find((c) => c.id === id)?.name ?? '—'
+
+function exportRows(): ExcelRow[] {
+  const codeOf = (id: string) => continents.value?.find((c) => c.id === id)?.code ?? ''
+  return (items.value ?? []).map((c) => ({
+    continent: codeOf(c.continent_id),
+    iso2: c.iso2,
+    iso3: c.iso3,
+    name: c.name,
+    dial_code: c.dial_code ?? '',
+  }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((c) => c.iso2))
+  // continent matched by code (preferred) or name
+  const findContinent = (v: unknown) => {
+    const s = String(v ?? '').trim().toLowerCase()
+    return (continents.value ?? []).find((c) => c.code.toLowerCase() === s || c.name.toLowerCase() === s)
+  }
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const iso2 = String(r.iso2 ?? '').trim().toUpperCase()
+    const iso3 = String(r.iso3 ?? '').trim().toUpperCase()
+    const name = String(r.name ?? '').trim()
+    if (iso2.length !== 2 || iso3.length !== 3 || !name) { report.errors.push({ row: rowNo, message: 'iso2(2)/iso3(3)/name wajib' }); continue }
+    const cont = findContinent(r.continent)
+    if (!cont) { report.errors.push({ row: rowNo, message: `continent '${r.continent ?? ''}' tidak ada` }); continue }
+    const { error } = await supabase.from('countries').upsert(
+      { continent_id: cont.id, iso2, iso3, name, dial_code: String(r.dial_code ?? '').trim() || null },
+      { onConflict: 'iso2' },
+    )
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(iso2)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -70,7 +112,8 @@ const valid = computed(
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+      <ExcelToolbar filename="countries" :export-rows="exportRows" :import-rows="importRows" :can-export="can('geography.read')" :can-import="can('geography.write')" />
       <UButton v-if="can('geography.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
