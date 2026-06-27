@@ -13,13 +13,14 @@ type Luggage = Database['public']['Tables']['luggages']['Row'] & {
 const { can } = useCan()
 const { items, create, update, remove } = useLuggages(tripId)
 const { items: types } = useLuggageTypes()
-const { items: profiles } = useProfiles()
+const { items: travelers } = useTripTravelers(tripId)
 const toast = useToast()
 
 const typeOptions = computed(() => (types.value ?? []).map((t) => ({ label: t.name, value: t.id })))
+// Scoped to this trip's travelers (B2) — not every user in the system.
 const travelerOptions = computed(() => [
   { label: '— belum di-assign —', value: NONE },
-  ...(profiles.value ?? []).map((p) => ({ label: p.full_name ?? '(tanpa nama)', value: p.id })),
+  ...(travelers.value ?? []).map((t) => ({ label: t.profiles?.full_name ?? '(tanpa nama)', value: t.profile_id })),
 ])
 
 const open = ref(false)

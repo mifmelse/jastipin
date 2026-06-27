@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 
-const props = defineProps<{ tripId: string }>()
+// Workspace is scoped to ONE route (B2): the queue, the per-luggage contents and
+// the weight bar all reflect what rides this leg. Placement uses the route prop.
+const props = defineProps<{ tripId: string; routeId: string | null }>()
 const tripId = toRef(props, 'tripId')
 
 type LoadItem = {
@@ -11,6 +13,7 @@ type LoadItem = {
     id: string
     qty: number
     item_name: string | null
+    weight_g: number | null
     products?: { name: string } | null
     orders?: { code: string | null; customers?: { name: string } | null } | null
   } | null
@@ -23,6 +26,7 @@ type Packable = {
   id: string
   item_name: string | null
   qty: number
+  weight_g: number | null
   products?: { name: string } | null
   orders?: { code: string | null; trip_route_id: string; customers?: { name: string } | null } | null
 }
@@ -30,35 +34,29 @@ type Packable = {
 const { can } = useCan()
 const { items: luggages, addLoadItem, removeLoadItem } = useLuggages(tripId)
 const { items: packable } = usePackableItems(tripId)
-const { items: sim } = useLuggageSimulation(tripId)
-const { items: allLegs } = useAllLegs()
 const user = useSupabaseUser()
 const toast = useToast()
 
-const legs = computed(() => (allLegs.value ?? []).filter((l) => l.trip_id === props.tripId))
-const legOptions = computed(() => legs.value.map((l) => ({ label: legLabel(l as LegEmbed), value: l.id })))
+// Items whose order belongs to the selected route.
+const routePackable = computed(() =>
+  (packable.value as Packable[] ?? []).filter((p) => p.orders?.trip_route_id === props.routeId),
+)
 const packableOptions = computed(() =>
-  (packable.value as Packable[] ?? []).map((p) => ({
+  routePackable.value.map((p) => ({
     label: `${p.orders?.code} · ${p.products?.name ?? p.item_name} ×${p.qty}`,
     value: p.id,
   })),
 )
-const itemLegMap = computed(() => {
-  const m = new Map<string, string>()
-  for (const p of (packable.value as Packable[] ?? [])) if (p.orders?.trip_route_id) m.set(p.id, p.orders.trip_route_id)
-  return m
-})
 
-// per-luggage simulation lookup (shared with the Simulation tab)
-type Sim = { luggage_id: string; loaded_weight_g: number; max_weight_g: number | null; tare_weight_g: number | null }
-const simByLuggage = computed(() => {
-  const m = new Map<string, Sim>()
-  for (const s of (sim.value as Sim[] ?? [])) m.set(s.luggage_id, s)
-  return m
-})
+// load_items of a luggage that ride the selected route.
+function routeItems(l: Luggage): LoadItem[] {
+  return (l.load_items ?? []).filter((li) => li.trip_route_id === props.routeId)
+}
 function weightOf(l: Luggage) {
-  const s = simByLuggage.value.get(l.id)
-  const loaded = s?.loaded_weight_g ?? 0
+  const loaded = routeItems(l).reduce(
+    (s, li) => s + Number(li.order_items?.weight_g ?? 0) * Number(li.order_items?.qty ?? 1),
+    0,
+  )
   const tare = Number(l.luggage_types?.tare_weight_g ?? 0)
   const max = Number(l.luggage_types?.max_weight_g ?? 0)
   const total = loaded + tare
@@ -67,31 +65,27 @@ function weightOf(l: Luggage) {
 const loadLabel = (li: LoadItem) =>
   `${li.order_items?.products?.name ?? li.order_items?.item_name ?? '(item)'} ×${li.order_items?.qty ?? 1}`
 
-// --- add item modal ---
+// --- add item modal (route = the workspace route) ---
 const open = ref(false)
 const saving = ref(false)
 const activeLuggage = ref<Luggage | null>(null)
-const form = reactive({ order_item_id: '', trip_route_id: '' })
-// default the leg to the item's own order leg when an item is picked
-watch(() => form.order_item_id, (id) => {
-  form.trip_route_id = itemLegMap.value.get(id) ?? legs.value[0]?.id ?? ''
-})
+const form = reactive({ order_item_id: '' })
 
 function openAdd(l: Luggage) {
   activeLuggage.value = l
-  Object.assign(form, { order_item_id: '', trip_route_id: '' })
+  form.order_item_id = ''
   open.value = true
 }
-const canSave = computed(() => !!form.order_item_id && !!form.trip_route_id)
+const canSave = computed(() => !!form.order_item_id && !!props.routeId)
 
 async function submit() {
-  if (!activeLuggage.value) return
+  if (!activeLuggage.value || !props.routeId) return
   saving.value = true
   try {
     await addLoadItem({
       luggage_id: activeLuggage.value.id,
       order_item_id: form.order_item_id,
-      trip_route_id: form.trip_route_id,
+      trip_route_id: props.routeId,
       placed_by: user.value?.id ?? null,
     })
     open.value = false
@@ -112,56 +106,62 @@ async function unpack(li: LoadItem) {
 
 <template>
   <div class="space-y-3">
-    <p class="text-xs text-stone-500">
-      {{ (packable?.length ?? 0) }} barang siap dimuat. Barang boleh diacak lintas customer demi maksimalkan ruang.
+    <p v-if="!routeId" class="text-sm text-stone-400 text-center py-16 border border-dashed border-stone-200 dark:border-stone-800 rounded-lg">
+      Pilih <span class="font-medium">route</span> dulu untuk mulai packing leg ini.
     </p>
 
-    <div v-if="!(luggages?.length)" class="text-sm text-stone-400 text-center py-10 border border-dashed border-stone-200 dark:border-stone-800 rounded-lg">
-      Belum ada luggage. Buat dulu di tab <span class="font-medium">Luggage</span>.
-    </div>
+    <template v-else>
+      <p class="text-xs text-stone-500">
+        {{ routePackable.length }} barang siap dimuat di route ini. Barang boleh diacak lintas customer demi maksimalkan ruang.
+      </p>
 
-    <div v-else class="flex gap-3 overflow-x-auto pb-2">
-      <div v-for="l in (luggages as Luggage[])" :key="l.id" class="w-72 shrink-0 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
-        <div class="p-3 border-b border-stone-100 dark:border-stone-800 space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <p class="font-medium text-sm">{{ l.label }}</p>
-            <UBadge :color="luggageStatusColor(l.status)" variant="soft" size="xs" class="capitalize">{{ l.status }}</UBadge>
-          </div>
-          <p class="text-xs text-stone-400">{{ l.luggage_types?.name }}</p>
-          <div>
-            <div class="h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
-              <div
-                class="h-full rounded-full transition-all"
-                :class="weightOf(l).over ? 'bg-error' : 'bg-primary'"
-                :style="{ width: `${weightOf(l).pct}%` }"
-              />
+      <div v-if="!(luggages?.length)" class="text-sm text-stone-400 text-center py-10 border border-dashed border-stone-200 dark:border-stone-800 rounded-lg">
+        Belum ada luggage. Buat dulu di tab <span class="font-medium">Luggage</span>.
+      </div>
+
+      <div v-else class="flex gap-3 overflow-x-auto pb-2">
+        <div v-for="l in (luggages as Luggage[])" :key="l.id" class="w-72 shrink-0 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
+          <div class="p-3 border-b border-stone-100 dark:border-stone-800 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-medium text-sm">{{ l.label }}</p>
+              <UBadge :color="luggageStatusColor(l.status)" variant="soft" size="xs" class="capitalize">{{ l.status }}</UBadge>
             </div>
-            <p class="text-xs mt-1" :class="weightOf(l).over ? 'text-error font-medium' : 'text-stone-500'">
-              {{ formatKg(weightOf(l).total) }} / {{ formatKg(weightOf(l).max) }}
-              <span v-if="weightOf(l).over"> · over!</span>
-            </p>
-          </div>
-        </div>
-
-        <div class="p-2 space-y-1">
-          <div
-            v-for="li in (l.load_items ?? [])"
-            :key="li.id"
-            class="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-stone-50 dark:hover:bg-stone-800/50"
-          >
-            <div class="min-w-0">
-              <p class="truncate">{{ loadLabel(li) }}</p>
-              <p class="text-xs text-stone-400 truncate">
-                {{ li.order_items?.orders?.code }} · {{ li.order_items?.orders?.customers?.name }}
+            <p class="text-xs text-stone-400">{{ l.luggage_types?.name }}</p>
+            <div>
+              <div class="h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all"
+                  :class="weightOf(l).over ? 'bg-error' : 'bg-primary'"
+                  :style="{ width: `${weightOf(l).pct}%` }"
+                />
+              </div>
+              <p class="text-xs mt-1" :class="weightOf(l).over ? 'text-error font-medium' : 'text-stone-500'">
+                {{ formatKg(weightOf(l).total) }} / {{ formatKg(weightOf(l).max) }}
+                <span v-if="weightOf(l).over"> · over!</span>
               </p>
             </div>
-            <UButton v-if="can('load_planning.write')" size="xs" color="error" variant="ghost" icon="i-lucide-x" aria-label="Keluarkan" @click="unpack(li)" />
           </div>
-          <p v-if="!(l.load_items?.length)" class="text-xs text-stone-300 dark:text-stone-700 text-center py-3">kosong</p>
-          <UButton v-if="can('load_planning.write')" size="xs" color="neutral" variant="soft" block icon="i-lucide-plus" @click="openAdd(l)">Tambah barang</UButton>
+
+          <div class="p-2 space-y-1">
+            <div
+              v-for="li in routeItems(l)"
+              :key="li.id"
+              class="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-stone-50 dark:hover:bg-stone-800/50"
+            >
+              <div class="min-w-0">
+                <p class="truncate">{{ loadLabel(li) }}</p>
+                <p class="text-xs text-stone-400 truncate">
+                  {{ li.order_items?.orders?.code }} · {{ li.order_items?.orders?.customers?.name }}
+                </p>
+              </div>
+              <UButton v-if="can('load_planning.write')" size="xs" color="error" variant="ghost" icon="i-lucide-x" aria-label="Keluarkan" @click="unpack(li)" />
+            </div>
+            <p v-if="!routeItems(l).length" class="text-xs text-stone-300 dark:text-stone-700 text-center py-3">kosong</p>
+            <UButton v-if="can('load_planning.write')" size="xs" color="neutral" variant="soft" block icon="i-lucide-plus" @click="openAdd(l)">Tambah barang</UButton>
+          </div>
         </div>
       </div>
-    </div>
+    </template>
 
     <UModal v-model:open="open" :title="activeLuggage ? `Tambah ke ${activeLuggage.label}` : 'Tambah barang'">
       <template #body>
@@ -169,11 +169,8 @@ async function unpack(li: LoadItem) {
           <UFormField label="Barang (siap di gudang)" required>
             <USelect v-model="form.order_item_id" :items="packableOptions" class="w-full" placeholder="Pilih barang…" />
           </UFormField>
-          <UFormField label="Dibawa di route" required help="Carry-over: pilih route mana barang ini diangkut.">
-            <USelect v-model="form.trip_route_id" :items="legOptions" class="w-full" />
-          </UFormField>
           <p v-if="!packableOptions.length" class="text-xs text-stone-400">
-            Tidak ada barang berstatus in_warehouse untuk trip ini.
+            Tidak ada barang in_warehouse untuk route ini.
           </p>
         </div>
       </template>
