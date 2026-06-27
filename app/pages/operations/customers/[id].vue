@@ -16,10 +16,11 @@ const { customer, status } = useCustomer(id)
     <div v-if="status === 'pending'" class="text-sm text-stone-400">Memuat…</div>
     <div v-else-if="!customer" class="text-sm text-stone-400">Customer tidak ditemukan.</div>
     <template v-else>
-      <div class="flex flex-wrap items-center gap-3">
-        <h1 class="text-xl font-semibold">{{ customer.name }}</h1>
-        <span v-if="customer.phone" class="text-sm text-stone-500">{{ customer.phone }}</span>
-      </div>
+      <PageHeader :title="customer.name" icon="i-lucide-user">
+        <template #actions>
+          <span v-if="customer.phone" class="text-sm text-stone-500">{{ customer.phone }}</span>
+        </template>
+      </PageHeader>
 
       <div class="grid gap-6 lg:grid-cols-2">
         <section class="space-y-3">

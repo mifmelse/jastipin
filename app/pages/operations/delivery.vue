@@ -8,10 +8,7 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Delivery</h1>
-      <p class="text-sm text-stone-500">Last-mile ke penerima setelah barang tiba di tujuan.</p>
-    </div>
+    <PageHeader title="Delivery" subtitle="Last-mile ke penerima setelah barang tiba di tujuan." icon="i-lucide-truck" />
 
     <UTabs :items="tabs" class="w-full">
       <template #shipments><DeliveryShipmentsPanel /></template>

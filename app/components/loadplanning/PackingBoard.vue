@@ -27,6 +27,7 @@ type Packable = {
   orders?: { code: string | null; trip_route_id: string; customers?: { name: string } | null } | null
 }
 
+const { can } = useCan()
 const { items: luggages, addLoadItem, removeLoadItem } = useLuggages(tripId)
 const { items: packable } = usePackableItems(tripId)
 const { items: sim } = useLuggageSimulation(tripId)
@@ -154,10 +155,10 @@ async function unpack(li: LoadItem) {
                 {{ li.order_items?.orders?.code }} · {{ li.order_items?.orders?.customers?.name }}
               </p>
             </div>
-            <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" aria-label="Keluarkan" @click="unpack(li)" />
+            <UButton v-if="can('load_planning.write')" size="xs" color="error" variant="ghost" icon="i-lucide-x" aria-label="Keluarkan" @click="unpack(li)" />
           </div>
           <p v-if="!(l.load_items?.length)" class="text-xs text-stone-300 dark:text-stone-700 text-center py-3">kosong</p>
-          <UButton size="xs" color="neutral" variant="soft" block icon="i-lucide-plus" @click="openAdd(l)">Tambah barang</UButton>
+          <UButton v-if="can('load_planning.write')" size="xs" color="neutral" variant="soft" block icon="i-lucide-plus" @click="openAdd(l)">Tambah barang</UButton>
         </div>
       </div>
     </div>

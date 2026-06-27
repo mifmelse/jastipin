@@ -12,6 +12,7 @@ type Ar = {
 }
 type Payment = Database['public']['Tables']['payments']['Row']
 
+const { can } = useCan()
 const { items, paymentsFor, recordPayment, removePayment } = useReceivables()
 const { items: currencies } = useCurrencies()
 const user = useSupabaseUser()
@@ -85,10 +86,7 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Receivables</h1>
-      <p class="text-sm text-stone-500">Uang masuk dari customer per order — tagihan vs terbayar.</p>
-    </div>
+    <PageHeader title="Receivables" subtitle="Uang masuk dari customer per order — tagihan vs terbayar." icon="i-lucide-arrow-down-left" />
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
@@ -157,7 +155,7 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
               <UInput v-model="form.reference" class="w-full" placeholder="no. transaksi (opsional)" />
             </UFormField>
           </div>
-          <UButton :loading="saving" :disabled="form.amount === ''" icon="i-lucide-plus" @click="save">Catat pembayaran</UButton>
+          <UButton v-if="can('receivables.write')" :loading="saving" :disabled="form.amount === ''" icon="i-lucide-plus" @click="save">Catat pembayaran</UButton>
 
           <div v-if="history.length" class="space-y-1 border-t border-stone-100 dark:border-stone-800 pt-3">
             <p class="text-xs font-medium text-stone-500 uppercase tracking-wide">Riwayat</p>
@@ -167,7 +165,7 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
                 {{ p.currency }} {{ Number(p.amount).toLocaleString('id-ID') }}
                 <span class="text-xs text-stone-400">· {{ p.method ?? '—' }} · {{ fmtDate(p.paid_at) }}</span>
               </div>
-              <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus" @click="delPayment(p.id)" />
+              <UButton v-if="can('receivables.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus" @click="delPayment(p.id)" />
             </div>
           </div>
         </div>

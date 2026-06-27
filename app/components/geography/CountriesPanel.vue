@@ -3,6 +3,7 @@ import type { Database } from '~/types/database.types'
 
 type Row = Database['public']['Tables']['countries']['Row']
 
+const { can } = useCan()
 const { items, create, update, remove } = useCountries()
 const { items: continents } = useContinents()
 const toast = useToast()
@@ -70,7 +71,7 @@ const valid = computed(
 <template>
   <div class="space-y-4">
     <div class="flex justify-end">
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
+      <UButton v-if="can('geography.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
     <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
@@ -94,8 +95,8 @@ const valid = computed(
             <td class="px-3 py-2 text-gray-500">{{ row.dial_code ?? '—' }}</td>
             <td class="px-3 py-2">
               <div class="flex justify-end gap-1">
-                <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('geography.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
+                <UButton v-if="can('geography.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>

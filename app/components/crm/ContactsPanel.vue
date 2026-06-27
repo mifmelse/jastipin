@@ -3,6 +3,7 @@ import type { Database } from '~/types/database.types'
 
 type Row = Database['public']['Tables']['customers']['Row']
 
+const { can } = useCan()
 const { items, create, remove } = useCustomers()
 const { items: countries } = useCountries()
 const toast = useToast()
@@ -27,6 +28,8 @@ function openCreate() {
   Object.assign(form, { name: '', phone: '', email: '', gender: NONE, country_id: NONE, notes: '' })
   open.value = true
 }
+// command-palette quick action: /operations/crm?tab=contacts&new=1
+useAutoOpen('new', openCreate)
 async function save() {
   saving.value = true
   try {
@@ -61,7 +64,7 @@ const addressCount = (row: { customer_addresses?: { count: number }[] }) =>
 <template>
   <div class="space-y-4">
     <div class="flex justify-end">
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah customer</UButton>
+      <UButton v-if="can('crm.write')" icon="i-lucide-plus" @click="openCreate">Tambah customer</UButton>
     </div>
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
@@ -90,7 +93,7 @@ const addressCount = (row: { customer_addresses?: { count: number }[] }) =>
             <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ addressCount(row) }}</td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end">
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('crm.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>

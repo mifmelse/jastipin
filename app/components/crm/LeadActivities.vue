@@ -2,6 +2,7 @@
 const props = defineProps<{ pipelineId: string; title: string }>()
 const emit = defineEmits<{ close: []; changed: [] }>()
 
+const { can } = useCan()
 const { items, create, remove } = useCrmActivities(props.pipelineId)
 const user = useSupabaseUser()
 const toast = useToast()
@@ -55,7 +56,7 @@ const fmt = (s: string) => new Date(s).toLocaleString('id-ID', { dateStyle: 'med
           <UFormField label="Catatan" class="flex-1">
             <UInput v-model="content" class="w-full" placeholder="mis. follow up WA" @keyup.enter="add" />
           </UFormField>
-          <UButton :loading="saving" :disabled="!content.trim()" icon="i-lucide-plus" @click="add">Tambah</UButton>
+          <UButton v-if="can('crm.write')" :loading="saving" :disabled="!content.trim()" icon="i-lucide-plus" @click="add">Tambah</UButton>
         </div>
 
         <div v-if="items?.length" class="space-y-2 max-h-80 overflow-y-auto">
@@ -69,7 +70,7 @@ const fmt = (s: string) => new Date(s).toLocaleString('id-ID', { dateStyle: 'med
               <span>{{ a.content }}</span>
               <p class="text-xs text-stone-400 mt-0.5">{{ fmt(a.created_at) }}</p>
             </div>
-            <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(a.id)" />
+            <UButton v-if="can('crm.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(a.id)" />
           </div>
         </div>
         <p v-else class="text-sm text-stone-400 text-center py-4">Belum ada activity.</p>

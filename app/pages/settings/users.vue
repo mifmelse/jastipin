@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { UserRow } from '~/composables/useUsers'
 
+const { can } = useCan()
 const { items, create, update, remove } = useUsers()
 const { items: roles } = useRoles()
 const { items: userTypes } = useUserTypes()
@@ -82,13 +83,11 @@ const canSave = computed(() =>
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-semibold">Users</h1>
-        <p class="text-sm text-gray-500">Akun tim internal + role-nya.</p>
-      </div>
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
-    </div>
+    <PageHeader title="Users" subtitle="Akun tim internal + role-nya." icon="i-lucide-users">
+      <template #actions>
+        <UButton v-if="can('users.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
+      </template>
+    </PageHeader>
 
     <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
       <table class="w-full text-sm">
@@ -111,8 +110,8 @@ const canSave = computed(() =>
             <td class="px-3 py-2 text-gray-500">{{ row.user_type ?? '—' }}</td>
             <td class="px-3 py-2">
               <div class="flex justify-end gap-1">
-                <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('users.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
+                <UButton v-if="can('users.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>

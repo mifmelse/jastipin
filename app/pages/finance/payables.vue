@@ -11,6 +11,7 @@ type Payable = {
   status: string
 }
 
+const { can } = useCan()
 const { items, settle, unsettle, addManual, removeManual } = usePayables()
 const { items: trips } = useTrips()
 const { items: currencies } = useCurrencies()
@@ -94,13 +95,11 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-semibold">Payables</h1>
-        <p class="text-sm text-stone-500">Modal keluar — sourcing, ongkir, biaya trip, lainnya. Ledger live (anti double-count).</p>
-      </div>
-      <UButton icon="i-lucide-plus" @click="openManual">Tambah manual</UButton>
-    </div>
+    <PageHeader title="Payables" subtitle="Modal keluar — sourcing, ongkir, biaya trip, lainnya. Ledger live (anti double-count)." icon="i-lucide-arrow-up-right">
+      <template #actions>
+        <UButton v-if="can('payables.write')" icon="i-lucide-plus" @click="openManual">Tambah manual</UButton>
+      </template>
+    </PageHeader>
 
     <div class="flex flex-wrap items-center gap-3">
       <USelect v-model="filterStatus" :items="statusOptions" class="w-40" />
@@ -136,10 +135,10 @@ const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleDateString('id-ID
             </td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end gap-1">
-                <UButton size="xs" :color="p.status === 'paid' ? 'neutral' : 'success'" variant="soft" @click="toggle(p)">
+                <UButton v-if="can('payables.write')" size="xs" :color="p.status === 'paid' ? 'neutral' : 'success'" variant="soft" @click="toggle(p)">
                   {{ p.status === 'paid' ? 'Batalkan' : 'Tandai lunas' }}
                 </UButton>
-                <UButton v-if="p.source_type === 'other'" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus" @click="onRemoveManual(p)" />
+                <UButton v-if="p.source_type === 'other' && can('payables.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus" @click="onRemoveManual(p)" />
               </div>
             </td>
           </tr>

@@ -17,16 +17,14 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-semibold">Load Planning</h1>
-        <p class="text-sm text-stone-500">Muat barang ke koper dengan simulasi berat & volume per leg.</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-stone-500">Trip</span>
-        <USelect v-model="selected" :items="tripOptions" class="w-64" />
-      </div>
-    </div>
+    <PageHeader title="Load Planning" subtitle="Muat barang ke koper dengan simulasi berat & volume per leg." icon="i-lucide-luggage">
+      <template #actions>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-stone-500">Trip</span>
+          <USelect v-model="selected" :items="tripOptions" class="w-64" />
+        </div>
+      </template>
+    </PageHeader>
 
     <p v-if="!tripId" class="text-sm text-stone-400 text-center py-16 border border-dashed border-stone-200 dark:border-stone-800 rounded-lg">
       Pilih trip dulu untuk mulai packing.

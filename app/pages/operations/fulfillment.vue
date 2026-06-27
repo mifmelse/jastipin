@@ -7,10 +7,7 @@ const tabs = [
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Fulfillment</h1>
-      <p class="text-sm text-stone-500">Bagaimana barang sampai ke tangan kita — sourcing (belanja) & drop-in (titipan).</p>
-    </div>
+    <PageHeader title="Fulfillment" subtitle="Bagaimana barang sampai ke tangan kita — sourcing (belanja) & drop-in (titipan)." icon="i-lucide-hand-helping" />
 
     <UTabs :items="tabs" class="w-full">
       <template #sourcing><FulfillmentSourcingPanel /></template>

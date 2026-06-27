@@ -7,6 +7,7 @@ type Lead = Database['public']['Tables']['crm_pipeline']['Row'] & {
   crm_activities?: { count: number }[]
 }
 
+const { can } = useCan()
 const { items, create, update, remove, refresh } = useCrmPipeline()
 const { items: customers } = useCustomers()
 const { items: trips } = useTrips()
@@ -94,7 +95,7 @@ const canSave = computed(() => (mode.value === 'new' ? !!form.contact_name.trim(
 <template>
   <div class="space-y-3">
     <div class="flex justify-end">
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah lead</UButton>
+      <UButton v-if="can('crm.write')" icon="i-lucide-plus" @click="openCreate">Tambah lead</UButton>
     </div>
 
     <div class="flex gap-3 overflow-x-auto pb-2">
@@ -112,7 +113,7 @@ const canSave = computed(() => (mode.value === 'new' ? !!form.contact_name.trim(
           >
             <div class="flex items-start justify-between gap-2">
               <p class="font-medium text-sm">{{ leadName(lead) }}</p>
-              <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus lead" @click="onDelete(lead)" />
+              <UButton v-if="can('crm.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus lead" @click="onDelete(lead)" />
             </div>
             <div class="flex flex-wrap gap-1 text-xs text-stone-500">
               <span v-if="lead.source" class="inline-flex items-center gap-1">

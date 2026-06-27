@@ -26,10 +26,7 @@ const kpis = computed(() => [
 
 <template>
   <div class="space-y-4">
-    <div>
-      <h1 class="text-xl font-semibold">Reports</h1>
-      <p class="text-sm text-stone-500">Cashflow, piutang/hutang, dan profit per trip.</p>
-    </div>
+    <PageHeader title="Reports" subtitle="Cashflow, piutang/hutang, dan profit per trip." icon="i-lucide-chart-bar" />
 
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
       <div v-for="k in kpis" :key="k.label" class="rounded-lg border border-stone-200 dark:border-stone-800 p-3">

@@ -3,6 +3,7 @@ import type { Database } from '~/types/database.types'
 
 type Row = Database['public']['Tables']['customer_addresses']['Row']
 
+const { can } = useCan()
 const props = defineProps<{ customerId: string }>()
 const { items, create, update, remove } = useCustomerAddresses(props.customerId)
 const { items: countries } = useCountries()
@@ -88,7 +89,7 @@ async function onDelete(row: Row) {
 <template>
   <div class="space-y-3">
     <div class="flex justify-end">
-      <UButton size="sm" icon="i-lucide-plus" @click="openCreate">Tambah alamat</UButton>
+      <UButton v-if="can('crm.write')" size="sm" icon="i-lucide-plus" @click="openCreate">Tambah alamat</UButton>
     </div>
 
     <div v-if="items?.length" class="space-y-2">
@@ -109,8 +110,8 @@ async function onDelete(row: Row) {
           </p>
         </div>
         <div class="flex gap-1 shrink-0">
-          <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
-          <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+          <UButton v-if="can('crm.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
+          <UButton v-if="can('crm.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
         </div>
       </div>
     </div>

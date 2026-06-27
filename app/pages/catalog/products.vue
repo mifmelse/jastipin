@@ -3,6 +3,7 @@ import type { Database } from '~/types/database.types'
 
 type Row = Database['public']['Tables']['products']['Row']
 
+const { can } = useCan()
 const { items, create, update, remove } = useProducts()
 const { items: brands } = useBrands()
 const { items: categories } = useCategories()
@@ -149,15 +150,13 @@ const valid = computed(
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-semibold">Products</h1>
-        <p class="text-sm text-stone-500">Katalog produk. Berat (gram) wajib untuk packing.</p>
-      </div>
-      <UButton icon="i-lucide-plus" :disabled="!(categories?.length) || !(units?.length)" @click="openCreate">
-        Tambah
-      </UButton>
-    </div>
+    <PageHeader title="Products" subtitle="Katalog produk. Berat (gram) wajib untuk packing." icon="i-lucide-package">
+      <template #actions>
+        <UButton v-if="can('products.write')" icon="i-lucide-plus" :disabled="!(categories?.length) || !(units?.length)" @click="openCreate">
+          Tambah
+        </UButton>
+      </template>
+    </PageHeader>
 
     <p v-if="!(categories?.length) || !(units?.length)" class="text-sm text-amber-600">
       Butuh minimal 1 Category & 1 Unit dulu sebelum bikin product.
@@ -199,8 +198,8 @@ const valid = computed(
             </td>
             <td class="px-3 py-2">
               <div class="flex justify-end gap-1">
-                <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('products.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
+                <UButton v-if="can('products.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>

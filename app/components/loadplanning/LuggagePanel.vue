@@ -10,6 +10,7 @@ type Luggage = Database['public']['Tables']['luggages']['Row'] & {
   load_items?: { id: string }[]
 }
 
+const { can } = useCan()
 const { items, create, update, remove } = useLuggages(tripId)
 const { items: types } = useLuggageTypes()
 const { items: profiles } = useProfiles()
@@ -76,7 +77,7 @@ const itemCount = (l: Luggage) => l.load_items?.length ?? 0
 <template>
   <div class="space-y-3">
     <div class="flex justify-end">
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah luggage</UButton>
+      <UButton v-if="can('load_planning.write')" icon="i-lucide-plus" @click="openCreate">Tambah luggage</UButton>
     </div>
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
@@ -102,8 +103,8 @@ const itemCount = (l: Luggage) => l.load_items?.length ?? 0
             </td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end gap-1">
-                <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" aria-label="Edit luggage" @click="openEdit(l)" />
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus luggage" @click="onDelete(l)" />
+                <UButton v-if="can('load_planning.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" aria-label="Edit luggage" @click="openEdit(l)" />
+                <UButton v-if="can('load_planning.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus luggage" @click="onDelete(l)" />
               </div>
             </td>
           </tr>

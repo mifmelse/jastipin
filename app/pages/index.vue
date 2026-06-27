@@ -44,10 +44,7 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
 
 <template>
   <div class="space-y-6">
-    <div>
-      <h1 class="text-xl font-semibold">Dashboard</h1>
-      <p class="text-sm text-stone-500">Ringkasan operasi & keuangan jastip.</p>
-    </div>
+    <PageHeader title="Dashboard" subtitle="Ringkasan operasi & keuangan jastip." icon="i-lucide-layout-dashboard" />
 
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
       <NuxtLink
