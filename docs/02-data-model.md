@@ -137,6 +137,13 @@ tampil). Kolom operations terkait tetap text: `trip_expenses.category`, `leads.s
 - sequence (int) — urutan leg dalam trip
 - *(arah leg = from→to menentukan asal & tujuan barang)*
 
+### trip_travelers *(BARU — B1)*
+Siapa yang fisik ikut & bawa barang di trip (many-to-many trip↔user).
+- id, trip_id → trips (cascade), profile_id → profiles (cascade)
+- role: `lead` | `assistant`
+- unique (trip_id, profile_id)
+- *Load Planning baca ini: dropdown traveler koper dibatasi ke set ini; Simulation tampil namanya.*
+
 ### trip_bookings
 Booking terkait trip (tiket, hotel, transport).
 - id, trip_id → trips, type (text: flight/hotel/transport/other),

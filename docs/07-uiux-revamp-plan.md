@@ -76,13 +76,12 @@
 
 ---
 
-## FASE B — Traveler assignment *(Trip ⟷ Load Planning)*
-- **Trip:** assign traveler dari data user (`trip_travelers`). UI di Trip detail.
-- **Load Planning restructure:** pilih **trip + route** sekalian (kayak order form) — workspace
-  scoped ke 1 route, **bukan** per-trip. (Data `load_items.trip_route_id` udah per-route.)
-- **Drag-n-drop** item ke koper (ganti klik-assign).
-- **Luggage traveler** dropdown **dibatasi ke traveler trip** tsb (biar nggak numpuk).
-- **Simulation** tampilkan **nama traveler** + **filter & sort**.
+## FASE B — Traveler assignment *(Trip ⟷ Load Planning)* — ✅ **SELESAI**
+- **B1** ✅ `trip_travelers` (trip_id+profile_id+**role** lead/assistant) + tab **Travelers** di Trip detail.
+- **B2** ✅ Load Planning pilih **trip + route**; PackingBoard scoped per-route (queue/isi/berat),
+  modal lepas picker route; dropdown traveler koper **dibatasi ke traveler trip**.
+- **B3** ✅ **Drag-n-drop** (vuedraggable/Sortable.js) — queue → koper, antar koper; tombol tap + x tetap (fallback).
+- **B4** ✅ Simulation tampil **nama traveler** + **filter (traveler) & sort (nama/berat/sisa)**.
 
 ## FASE C — Order & Fulfillment
 - Produk dipilih di item order → **harga auto-fill** (dari `products.price`, editable);
