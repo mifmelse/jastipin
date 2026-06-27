@@ -61,7 +61,7 @@ const linkClass = (path: string | null) =>
       </ClientOnly>
     </aside>
 
-    <div class="md:pl-60 flex flex-col min-h-screen">
+    <div class="md:pl-60 flex flex-col h-dvh">
       <header
         class="sticky top-0 z-20 h-14 border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 flex items-center gap-2 sm:gap-3 px-3 sm:px-4"
       >
