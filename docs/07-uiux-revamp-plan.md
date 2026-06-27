@@ -30,7 +30,7 @@
 
 ## FASE A — Fondasi reusable
 
-**A1. UI cleanup global** *(no DB)*
+**A1. UI cleanup global** *(no DB)* — ✅ **SELESAI** (commits 028f899, 5a941a1, 83f6658)
 - Rename istilah **`leg`/`legs` → `route`** di SELURUH UI (label, judul, placeholder).
   Tabel tetap `trip_routes`. e2e yang assert teks "leg" disesuaikan.
 - **FAB** (floating add) konsisten di Trip detail — Bookings/Expenses/Routes ikut pola
