@@ -44,7 +44,7 @@ test('issue invoice from order → printable invoice renders', async ({ page }) 
   await page.waitForURL(/\/finance\/invoices\/[0-9a-f-]+/)
 
   // the invoice document
-  await expect(page.getByText('INVOICE')).toBeVisible()
+  await expect(page.getByText('INVOICE', { exact: true })).toBeVisible()
   await expect(page.getByText(/INV-/).first()).toBeVisible()
   await expect(page.getByText(CUST)).toBeVisible()
   await expect(page.getByText('Skincare')).toBeVisible()
