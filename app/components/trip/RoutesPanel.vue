@@ -87,12 +87,8 @@ const valid = computed(
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
-      <p class="text-sm text-stone-500">{{ hint }}</p>
-      <UButton v-if="can('trips.write')" icon="i-lucide-plus" :disabled="!canAdd" @click="openAdd">
-        Tambah route
-      </UButton>
-    </div>
+    <p class="text-sm text-stone-500">{{ hint }}</p>
+    <FabAdd v-if="canAdd" label="Tambah route" @click="openAdd" />
 
     <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">

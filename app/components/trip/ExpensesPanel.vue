@@ -82,9 +82,7 @@ const valid = computed(() => form.category.trim() && Number(form.amount) > 0)
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
-      <UButton v-if="can('trips.write')" icon="i-lucide-plus" @click="openCreate">Tambah expense</UButton>
-    </div>
+    <FabAdd label="Tambah expense" @click="openCreate" />
 
     <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
