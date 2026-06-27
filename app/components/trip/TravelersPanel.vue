@@ -58,12 +58,8 @@ async function onRemove(id: string, name: string) {
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between gap-2">
-      <p class="text-sm text-stone-500">Siapa yang ikut membawa barang di trip ini.</p>
-      <UButton v-if="can('trips.write')" size="sm" icon="i-lucide-user-plus" :disabled="!profileOptions.length" @click="openAdd">
-        Tambah traveler
-      </UButton>
-    </div>
+    <p class="text-sm text-stone-500">Siapa yang ikut membawa barang di trip ini.</p>
+    <FabAdd label="Tambah traveler" @click="openAdd" />
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800">
       <div v-for="t in items ?? []" :key="t.id" class="flex items-center justify-between gap-3 p-3">

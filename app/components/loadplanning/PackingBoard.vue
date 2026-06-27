@@ -72,14 +72,14 @@ const byLuggage = reactive<Record<string, Card[]>>({})
 const itemTitle = (oi: Packable | NonNullable<LoadItem['order_items']>) =>
   `${oi.products?.name ?? oi.item_name ?? '(item)'} ×${oi.qty}`
 
-// Total weight (g) and volume (cm³) for the whole line (× qty).
-function volCm3(l: number | null, w: number | null, h: number | null, qty: number) {
-  if (!l || !w || !h) return null
-  return ((Number(l) * Number(w) * Number(h)) / 1000) * qty
-}
-function metaStr(weightG: number, vol: number | null) {
-  const wlabel = `${Math.round(weightG).toLocaleString('id-ID')} g`
-  return vol ? `${wlabel} · ${Math.round(vol).toLocaleString('id-ID')} cm³` : wlabel
+// Card meta: total weight (g), per-unit dims (mm) and total volume (cm³).
+function metaStr(weightG: number, l: number | null, w: number | null, h: number | null, qty: number) {
+  const parts = [`${Math.round(weightG).toLocaleString('id-ID')} g`]
+  if (l && w && h) {
+    parts.push(`${l}×${w}×${h} mm`)
+    parts.push(`${Math.round((Number(l) * Number(w) * Number(h) / 1000) * qty).toLocaleString('id-ID')} cm³`)
+  }
+  return parts.join(' · ')
 }
 
 watchEffect(() => {
@@ -89,7 +89,7 @@ watchEffect(() => {
     loadItemId: null,
     title: itemTitle(p),
     sub: `${p.orders?.code ?? ''} · ${p.orders?.customers?.name ?? ''}`,
-    meta: metaStr(Number(p.weight_g ?? 0) * p.qty, volCm3(p.length_mm, p.width_mm, p.height_mm, p.qty)),
+    meta: metaStr(Number(p.weight_g ?? 0) * p.qty, p.length_mm, p.width_mm, p.height_mm, p.qty),
   }))
   for (const l of (luggages.value as Luggage[]) ?? []) {
     byLuggage[l.id] = routeItems(l).map((li) => {
@@ -101,7 +101,7 @@ watchEffect(() => {
         loadItemId: li.id,
         title: oi ? itemTitle(oi) : '(item)',
         sub: `${oi?.orders?.code ?? ''} · ${oi?.orders?.customers?.name ?? ''}`,
-        meta: metaStr(Number(oi?.weight_g ?? 0) * qty, volCm3(oi?.length_mm ?? null, oi?.width_mm ?? null, oi?.height_mm ?? null, qty)),
+        meta: metaStr(Number(oi?.weight_g ?? 0) * qty, oi?.length_mm ?? null, oi?.width_mm ?? null, oi?.height_mm ?? null, qty),
       }
     })
   }
