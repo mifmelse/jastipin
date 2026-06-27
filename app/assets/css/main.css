@@ -23,6 +23,20 @@
   --color-honey-500: #d98a1f;
   --color-honey-600: #b86d16;
 
+  /* Neutral: cool gray (overrides Tailwind's warm "stone") for a crisp,
+     data-app surface. Applies app-wide via stone-* classes + @nuxt/ui neutral. */
+  --color-stone-50: #f6f7f9;
+  --color-stone-100: #eceef2;
+  --color-stone-200: #e1e4ea;
+  --color-stone-300: #cbd0da;
+  --color-stone-400: #99a0ae;
+  --color-stone-500: #6e7585;
+  --color-stone-600: #555c69;
+  --color-stone-700: #3e434e;
+  --color-stone-800: #2a2e38;
+  --color-stone-900: #1b1e26;
+  --color-stone-950: #111319;
+
   /* Type: warm, legible body (display set on headings below) */
   --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
