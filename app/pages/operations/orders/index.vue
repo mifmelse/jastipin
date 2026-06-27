@@ -96,7 +96,7 @@ watch(legs, (list) => {
 
     <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
+        <thead class="bg-stone-100 dark:bg-stone-800/40 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Code</th>
             <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
