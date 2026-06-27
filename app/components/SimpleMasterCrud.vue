@@ -93,6 +93,7 @@ async function onDelete(row: MasterRow) {
           :filename="table"
           :export-rows="exportRows"
           :import-rows="importRows"
+          :columns="['name', 'is_active']"
           :can-export="can(`${permission}.read`)"
           :can-import="can(`${permission}.write`)"
         />

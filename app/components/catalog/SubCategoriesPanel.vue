@@ -87,7 +87,7 @@ const valid = computed(() => form.name.trim() && form.category_id)
 <template>
   <div class="space-y-4">
     <div class="flex justify-end gap-2">
-      <ExcelToolbar filename="sub-categories" :export-rows="exportRows" :import-rows="importRows" :can-export="can('categories.read')" :can-import="can('categories.write')" />
+      <ExcelToolbar filename="sub-categories" :export-rows="exportRows" :import-rows="importRows" :columns="['category', 'name', 'is_active']" :can-export="can('categories.read')" :can-import="can('categories.write')" />
       <UButton v-if="can('categories.write')" icon="i-lucide-plus" :disabled="!(categories?.length)" @click="openCreate">Tambah</UButton>
     </div>
 

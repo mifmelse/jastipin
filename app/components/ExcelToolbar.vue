@@ -14,6 +14,8 @@ const props = defineProps<{
   filename: string
   exportRows: () => ExcelRow[]
   importRows?: (rows: ExcelRow[]) => Promise<ImportReport>
+  // Column headers — used to emit a blank template when there's no data yet.
+  columns?: string[]
   canExport?: boolean
   canImport?: boolean
 }>()
@@ -26,10 +28,17 @@ const report = ref<ImportReport | null>(null)
 const reportOpen = ref(false)
 
 async function doExport() {
-  const rows = props.exportRows()
+  let rows = props.exportRows()
   if (!rows.length) {
-    toast.add({ title: 'Tidak ada data untuk diekspor', color: 'warning' })
-    return
+    // No data yet → emit a header-only template (one blank row) so the user
+    // sees exactly which columns to fill before importing.
+    if (props.columns?.length) {
+      rows = [Object.fromEntries(props.columns.map((c) => [c, '']))]
+      toast.add({ title: 'Belum ada data — diekspor sebagai template kosong', color: 'info' })
+    } else {
+      toast.add({ title: 'Tidak ada data untuk diekspor', color: 'warning' })
+      return
+    }
   }
   await exportToXlsx(props.filename, rows)
 }

@@ -227,6 +227,7 @@ async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
           filename="products"
           :export-rows="exportRows"
           :import-rows="importRows"
+          :columns="['name', 'code', 'brand', 'category', 'sub_category', 'unit', 'country', 'weight_g', 'length_mm', 'width_mm', 'height_mm', 'base_price', 'cost_price', 'currency', 'is_active']"
           :can-export="can('products.read')"
           :can-import="can('products.write')"
         />
