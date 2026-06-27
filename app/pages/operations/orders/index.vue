@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { can } = useCan()
 const { items, remove } = useOrders()
 const { items: customers } = useCustomers()
 const { items: legs } = useAllLegs()
@@ -87,13 +88,11 @@ watch(legs, (list) => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-semibold">Orders</h1>
-        <p class="text-sm text-stone-500">Transaksi inti — 1 customer untuk 1 leg.</p>
-      </div>
-      <UButton icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
-    </div>
+    <PageHeader title="Orders" subtitle="Transaksi inti — 1 customer untuk 1 leg." icon="i-lucide-shopping-cart">
+      <template #actions>
+        <UButton v-if="can('orders.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
+      </template>
+    </PageHeader>
 
     <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
@@ -127,7 +126,7 @@ watch(legs, (list) => {
             </td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end">
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus order" @click="onDelete(row)" />
+                <UButton v-if="can('orders.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" aria-label="Hapus order" @click="onDelete(row)" />
               </div>
             </td>
           </tr>
