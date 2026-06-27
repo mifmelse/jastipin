@@ -110,10 +110,15 @@
   harga "—", info bank/QRIS dari company profile.
 - **Bukti pembayaran** upload di catat-bayar (→ payments.proof_url) — sudah di A3.
 
-## FASE E — Dashboard
-- **Work queues** actionable ("X order siap packing → klik langsung kerja").
-- **Filter periode** (bulan ini / range tanggal) untuk kas & profit.
-- **Notifikasi** dari data (bel: AR jatuh tempo, koper over-weight, dll).
+## FASE E — Dashboard — ✅ **SELESAI**
+- **E1** ✅ **Work queues actionable** — view `work_queue_counts` (item by status+type) →
+  `useWorkQueues` → kartu "Siap di-sourcing / Drop-in masuk / Siap diterima gudang / Siap di-pack /
+  Siap dikirim", klik langsung ke halaman kerja-nya.
+- **E2** ✅ **Filter periode kas** — `usePeriodCash(period)` (bulan ini/lalu/30hari/semua) →
+  Masuk (payments paid) / Keluar (payables paid) / Bersih, filter `paid_at`.
+- **E3** ✅ **Notifikasi (bel)** — `useNotifications` derive dari data (no table): AR belum lunas,
+  invoice jatuh tempo (`due_at < today`), luggage over-weight (dari `luggage_simulation`).
+  `AppNotifications` (UPopover + dot merah) di topbar, tiap alert link ke halamannya.
 
 ## FASE F — Wipe + re-seed master *(FASE 14 lama)*
 - Kosongkan semua **kecuali** user/roles/permissions/menu. Re-seed master pakai **Excel import**

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Period } from '~/composables/usePeriodCash'
+
 type OrderRow = { status: string }
 type Ar = { paid_idr: number; outstanding_idr: number }
 type Payable = { amount_idr: number; status: string }
@@ -10,6 +12,10 @@ const { items: orders } = useOrders()
 const { items: ar } = useReceivables()
 const { items: payables } = usePayables()
 const { items: pnl } = useTripPnl()
+const { queues } = useWorkQueues()
+
+const period = ref<Period>('this_month')
+const { data: periodCash } = usePeriodCash(period)
 
 const sum = (arr: number[]) => arr.reduce((a, b) => a + Number(b || 0), 0)
 
@@ -57,6 +63,47 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
         <p class="text-lg font-semibold tabular-nums mt-1" :class="k.tone">{{ k.value }}</p>
       </NuxtLink>
     </div>
+
+    <section v-if="queues.length" class="space-y-2">
+      <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Antrian kerja</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <NuxtLink
+          v-for="q in queues"
+          :key="q.key"
+          :to="q.to"
+          class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 flex items-center gap-3 hover:border-primary/50 transition-colors"
+        >
+          <div class="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <UIcon :name="q.icon" class="size-5" />
+          </div>
+          <div class="min-w-0">
+            <p class="text-lg font-semibold tabular-nums leading-tight">{{ q.count }}</p>
+            <p class="text-xs text-stone-500 truncate">{{ q.label }}</p>
+          </div>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <section class="space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Kas</h2>
+        <USelect v-model="period" :items="PERIOD_OPTIONS" size="sm" class="w-44" />
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3">
+          <p class="text-xs text-stone-500">Masuk</p>
+          <p class="text-base sm:text-lg font-semibold tabular-nums text-success mt-1">{{ formatIDR(periodCash?.cashIn ?? 0) }}</p>
+        </div>
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3">
+          <p class="text-xs text-stone-500">Keluar</p>
+          <p class="text-base sm:text-lg font-semibold tabular-nums text-error mt-1">{{ formatIDR(periodCash?.cashOut ?? 0) }}</p>
+        </div>
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3">
+          <p class="text-xs text-stone-500">Bersih</p>
+          <p class="text-base sm:text-lg font-semibold tabular-nums mt-1" :class="(periodCash?.netCash ?? 0) >= 0 ? 'text-success' : 'text-error'">{{ formatIDR(periodCash?.netCash ?? 0) }}</p>
+        </div>
+      </div>
+    </section>
 
     <div class="grid gap-6 lg:grid-cols-2">
       <section class="space-y-2">

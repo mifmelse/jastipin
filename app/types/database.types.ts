@@ -2267,6 +2267,14 @@ export type Database = {
         }
         Relationships: []
       }
+      work_queue_counts: {
+        Row: {
+          fulfillment_type: string | null
+          n: number | null
+          status: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_moment: {
