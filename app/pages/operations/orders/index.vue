@@ -94,7 +94,7 @@ watch(legs, (list) => {
       </template>
     </PageHeader>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
           <tr>
@@ -135,6 +135,33 @@ watch(legs, (list) => {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <button
+        v-for="row in (items as OrderRow[]) ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+        @click="router.push(`/operations/orders/${row.id}`)"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.customers?.name ?? '—' }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ row.code }}</span>
+          </div>
+          <UBadge :color="orderStatusColor(row.status)" variant="soft" class="capitalize shrink-0">
+            {{ row.status.replace('_', ' ') }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate inline-flex items-center gap-1">
+            <UIcon name="i-lucide-plane" class="size-3.5 shrink-0" />{{ legLabel(row.trip_route ?? null) }}
+          </span>
+          <span class="font-semibold text-primary tabular-nums shrink-0">{{ formatIDR(row.total_idr) }}</span>
+        </div>
+      </button>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada order.</p>
     </div>
 
     <UModal v-model:open="open" title="Tambah Order">
