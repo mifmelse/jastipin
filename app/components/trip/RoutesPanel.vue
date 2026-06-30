@@ -15,9 +15,9 @@ const isRound = computed(() => props.tripType === 'round')
 const hint = computed(
   () =>
     ({
-      single: 'Single: tepat 1 leg (A → B).',
-      round: 'Round: isi leg pergi (A → B); leg balik (B → A) dibuat otomatis.',
-      multi: 'Multi: tambah leg sepuasnya; origin tiap leg otomatis = destinasi leg sebelumnya.',
+      single: 'Single: tepat 1 route (A → B).',
+      round: 'Round: isi route pergi (A → B); route balik (B → A) dibuat otomatis.',
+      multi: 'Multi: tambah route sepuasnya; origin tiap route otomatis = destinasi route sebelumnya.',
     })[props.tripType] ?? '',
 )
 
@@ -72,7 +72,7 @@ async function save() {
   }
 }
 async function onDelete(row: { id: string; sequence: number }) {
-  if (!(await useConfirm().confirm({ title: 'Hapus leg', description: `Hapus leg #${row.sequence}?` }))) return
+  if (!(await useConfirm().confirm({ title: 'Hapus route', description: `Hapus route #${row.sequence}?` }))) return
   try {
     await remove(row.id)
   } catch (e) {
@@ -87,21 +87,17 @@ const valid = computed(
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
-      <p class="text-sm text-stone-500">{{ hint }}</p>
-      <UButton v-if="can('trips.write')" icon="i-lucide-plus" :disabled="!canAdd" @click="openAdd">
-        {{ isRound ? 'Tambah rute' : 'Tambah leg' }}
-      </UButton>
-    </div>
+    <p class="text-sm text-stone-500">{{ hint }}</p>
+    <FabAdd v-if="canAdd" label="Tambah route" @click="openAdd" />
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium w-12">#</th>
-            <th class="px-3 py-2 font-medium">Route</th>
-            <th class="px-3 py-2 font-medium">Departure</th>
-            <th class="px-3 py-2 w-12"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide w-12">#</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Route</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Departure</th>
+            <th class="px-3 py-2.5 w-12"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -118,13 +114,33 @@ const valid = computed(
             </td>
           </tr>
           <tr v-if="!(items?.length)">
-            <td colspan="4" class="px-3 py-6 text-center text-stone-400">Belum ada leg.</td>
+            <td colspan="4" class="px-3 py-6 text-center text-stone-400">Belum ada route.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <UModal v-model:open="open" :title="isRound ? 'Tambah Rute (pergi–balik)' : 'Tambah Leg'">
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.from_country?.name }} <span class="text-stone-400">→</span> {{ row.to_country?.name }}</span>
+          </div>
+          <span class="font-mono text-xs text-stone-400 shrink-0">#{{ row.sequence }}</span>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">Departure</span>
+          <span class="font-medium tabular-nums shrink-0">{{ row.departure_date ?? '—' }}</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada route.</p>
+    </div>
+
+    <UModal v-model:open="open" :title="isRound ? 'Tambah Route (pergi–balik)' : 'Tambah Route'">
       <template #body>
         <div class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -142,7 +158,7 @@ const valid = computed(
             </UFormField>
           </div>
           <p v-if="isRound" class="text-xs text-stone-500">
-            Leg balik (To → From) dibuat otomatis.
+            Route balik (To → From) dibuat otomatis.
           </p>
         </div>
       </template>

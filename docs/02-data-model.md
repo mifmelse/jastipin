@@ -69,6 +69,20 @@ Definisi jenis wadah angkut.
 - regulation_note (text, nullable) — mis. "kabin max 7kg maskapai X"
 - is_active
 
+### Picker masters *(BARU — A4)*
+Lima master "daftar pilihan" seragam: `id, name (unique), is_active, created_at`.
+- **expense_categories** — kategori Trip expense
+- **lead_sources** — asal lead CRM
+- **stores** — toko sourcing (Fulfillment)
+- **couriers** — kurir; dipakai 2 tempat (drop-in `courier_from` + delivery `courier`)
+- **payment_methods** — metode bayar (Receivables)
+
+**Penting — snapshot, BUKAN FK:** operations menyimpan **teks** nama yang dipilih saat
+dicatat (beku, seperti fx_rate). Master cuma daftar pilihan; rename/hapus master **nol efek**
+ke transaksi lama. UI pakai komponen `MasterSelect` (USelect dari master, nilai lama tetap
+tampil). Kolom operations terkait tetap text: `trip_expenses.category`, `leads.source`,
+`sourcing_records.store_name` & `courier_from`, `deliveries.courier`, `payments.method`.
+
 ---
 
 ## C. Catalog
@@ -89,7 +103,7 @@ Definisi jenis wadah angkut.
 - is_active, created_at, updated_at
 
 ### brands
-- id, name (unique), country_id (nullable), logo_url (nullable), is_active.
+- id, name (unique), country_id (nullable), image_url (nullable, logo), is_active.
 
 ### categories
 - id, name (unique), description, is_active.
@@ -122,6 +136,13 @@ Definisi jenis wadah angkut.
 - departure_date (date)
 - sequence (int) — urutan leg dalam trip
 - *(arah leg = from→to menentukan asal & tujuan barang)*
+
+### trip_travelers *(BARU — B1)*
+Siapa yang fisik ikut & bawa barang di trip (many-to-many trip↔user).
+- id, trip_id → trips (cascade), profile_id → profiles (cascade)
+- role: `lead` | `assistant`
+- unique (trip_id, profile_id)
+- *Load Planning baca ini: dropdown traveler koper dibatasi ke set ini; Simulation tampil namanya.*
 
 ### trip_bookings
 Booking terkait trip (tiket, hotel, transport).
@@ -223,12 +244,15 @@ fisik belanja/terima ada di tabel sendiri agar order_items tetap bersih.
   id, trip_id → trips, luggage_type_id → luggage_types,
   assigned_traveler → profiles (nullable), label (mis. "Koper A"),
   status: `planned` | `packed` | `loaded` | `unloaded`.
-- **load_items** — barang dimuat ke luggage (boleh acak lintas customer).
+- **load_items** — unit barang dimuat ke luggage (boleh acak lintas customer).
   id, luggage_id → luggages (cascade), order_item_id → order_items,
   trip_route_id → trip_routes (leg mana barang ini dibawa — penting untuk
-  carry-over), placed_at, placed_by → profiles.
-  - Simulasi: total berat per luggage = Σ weight_g load_items + tare ≤ max_weight_g;
-    volume serupa.
+  carry-over), **qty (int, B5)** — jumlah unit di luggage ini, placed_at, placed_by → profiles.
+  - **unique (luggage_id, order_item_id, trip_route_id)** — 1 order_item bisa **dipecah**
+    ke beberapa luggage (B5); dalam 1 luggage+leg cukup qty-nya yang berubah.
+  - **Status (trigger):** order_item → `packed` hanya saat **semua unit** ter-place di leg-nya
+    (Σ load_items.qty ≥ order_items.qty), selain itu balik `in_warehouse`.
+  - Simulasi: berat per luggage = Σ (per-unit weight × **load_items.qty**) + tare ≤ max; volume serupa.
 
 ### Delivery
 - **shipments** — id, order_id → orders (atau granular per order_item bila perlu),
@@ -259,6 +283,17 @@ fisik belanja/terima ada di tabel sendiri agar order_items tetap bersih.
 > incurred_at, description, status, paid_at. Status bayar disimpan di overlay tipis
 > **`payable_settlements`** (unique per source_type+source_id; ada baris = paid).
 > Nilai tidak pernah disalin/basi; reports baca view → tidak mungkin double-count.
+
+### invoices *(BARU — D2)*
+Tagihan persisted per order (totals tetap derived; record cuma simpan kode/tanggal/status).
+- id, **code** (`INV-xxxx` auto via `set_code`), order_id → orders (cascade),
+  issued_at (date), due_at (date, nullable), status: `draft|sent|paid|void`, notes.
+- Print page `/finance/invoices/[id]` (layout `print` + `@media print`) → **Save as PDF**.
+
+### company_profile *(BARU — D1)*
+Single-row (`id = 1`) identitas usaha untuk header/footer invoice.
+- name, logo_url, address, phone, email, bank_name, bank_account, bank_holder,
+  qris_url, invoice_note. Menu di **Settings** (admin-only).
 
 ### Reports
 Tidak butuh tabel — query/aggregation di atas payments + payables + orders

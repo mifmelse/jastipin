@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Period } from '~/composables/usePeriodCash'
+
 type OrderRow = { status: string }
 type Ar = { paid_idr: number; outstanding_idr: number }
 type Payable = { amount_idr: number; status: string }
@@ -10,6 +12,10 @@ const { items: orders } = useOrders()
 const { items: ar } = useReceivables()
 const { items: payables } = usePayables()
 const { items: pnl } = useTripPnl()
+const { queues } = useWorkQueues()
+
+const period = ref<Period>('this_month')
+const { data: periodCash } = usePeriodCash(period)
 
 const sum = (arr: number[]) => arr.reduce((a, b) => a + Number(b || 0), 0)
 
@@ -51,17 +57,58 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
         v-for="k in kpis"
         :key="k.label"
         :to="k.to"
-        class="rounded-lg border border-stone-200 dark:border-stone-800 p-3 hover:border-primary/50 transition-colors"
+        class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 hover:border-primary/50 transition-colors"
       >
         <p class="text-xs text-stone-500">{{ k.label }}</p>
         <p class="text-lg font-semibold tabular-nums mt-1" :class="k.tone">{{ k.value }}</p>
       </NuxtLink>
     </div>
 
+    <section v-if="queues.length" class="space-y-2">
+      <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Antrian kerja</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <NuxtLink
+          v-for="q in queues"
+          :key="q.key"
+          :to="q.to"
+          class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 flex items-center gap-3 hover:border-primary/50 transition-colors"
+        >
+          <div class="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <UIcon :name="q.icon" class="size-5" />
+          </div>
+          <div class="min-w-0">
+            <p class="text-lg font-semibold tabular-nums leading-tight">{{ q.count }}</p>
+            <p class="text-xs text-stone-500 truncate">{{ q.label }}</p>
+          </div>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <section class="space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Kas</h2>
+        <USelect v-model="period" :items="PERIOD_OPTIONS" size="sm" class="w-44" />
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3">
+          <p class="text-xs text-stone-500">Masuk</p>
+          <p class="text-base sm:text-lg font-semibold tabular-nums text-success mt-1">{{ formatIDR(periodCash?.cashIn ?? 0) }}</p>
+        </div>
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3">
+          <p class="text-xs text-stone-500">Keluar</p>
+          <p class="text-base sm:text-lg font-semibold tabular-nums text-error mt-1">{{ formatIDR(periodCash?.cashOut ?? 0) }}</p>
+        </div>
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3">
+          <p class="text-xs text-stone-500">Bersih</p>
+          <p class="text-base sm:text-lg font-semibold tabular-nums mt-1" :class="(periodCash?.netCash ?? 0) >= 0 ? 'text-success' : 'text-error'">{{ formatIDR(periodCash?.netCash ?? 0) }}</p>
+        </div>
+      </div>
+    </section>
+
     <div class="grid gap-6 lg:grid-cols-2">
       <section class="space-y-2">
         <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Order berjalan</h2>
-        <div class="rounded-lg border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800">
           <NuxtLink
             v-for="s in orderByStatus"
             :key="s.status"
@@ -77,7 +124,7 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
 
       <section class="space-y-2">
         <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Trip aktif</h2>
-        <div class="rounded-lg border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
+        <div class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800">
           <NuxtLink
             v-for="t in activeTrips"
             :key="t.id"
@@ -88,7 +135,7 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
               <span class="font-mono text-xs text-stone-400 mr-1">{{ t.code }}</span>{{ t.name }}
             </span>
             <span class="flex items-center gap-2 shrink-0">
-              <span class="text-xs text-stone-400">{{ legCount(t) }} leg</span>
+              <span class="text-xs text-stone-400">{{ legCount(t) }} route</span>
               <UBadge :color="tripStatusColor(t.status)" variant="soft" class="capitalize">{{ t.status }}</UBadge>
             </span>
           </NuxtLink>
@@ -102,20 +149,20 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
         <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Profit per trip</h2>
         <NuxtLink to="/finance/reports" class="text-xs text-primary hover:underline">Lihat semua →</NuxtLink>
       </div>
-      <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+      <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+          <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
             <tr>
-              <th class="px-3 py-2 font-medium">Trip</th>
-              <th class="px-3 py-2 font-medium text-right">Revenue</th>
-              <th class="px-3 py-2 font-medium text-right">Biaya</th>
-              <th class="px-3 py-2 font-medium text-right">Profit</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Trip</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Revenue</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Biaya</th>
+              <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Profit</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
             <tr v-for="t in topTrips" :key="t.trip_id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
               <td class="px-3 py-2"><span class="font-mono text-xs text-stone-400 mr-1">{{ t.code }}</span>{{ t.name }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ formatIDR(t.revenue_idr) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">{{ formatIDR(t.revenue_idr) }}</td>
               <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ formatIDR(t.cost_idr) }}</td>
               <td class="px-3 py-2 text-right tabular-nums font-medium" :class="t.profit_idr >= 0 ? 'text-success' : 'text-error'">{{ formatIDR(t.profit_idr) }}</td>
             </tr>
@@ -124,6 +171,26 @@ const topTrips = computed(() => ((pnl.value as Pnl[]) ?? []).slice(0, 5))
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="md:hidden space-y-2">
+        <div
+          v-for="t in topTrips"
+          :key="t.trip_id"
+          class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-medium truncate">{{ t.name }}</span>
+              <span class="font-mono text-xs text-stone-400 shrink-0">{{ t.code }}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+            <span class="text-xs text-stone-500 truncate">Revenue {{ formatIDR(t.revenue_idr) }}</span>
+            <span class="font-semibold tabular-nums shrink-0" :class="t.profit_idr >= 0 ? 'text-success' : 'text-error'">{{ formatIDR(t.profit_idr) }}</span>
+          </div>
+        </div>
+        <p v-if="!topTrips.length" class="text-center text-stone-400 text-sm py-6">Belum ada data.</p>
       </div>
     </section>
   </div>

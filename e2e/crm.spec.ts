@@ -22,7 +22,8 @@ test('customer: create → detail, edit info, add address, delete', async ({ pag
 
   // edit info (phone) — persists via customers PATCH
   const main = page.locator('main')
-  await main.locator('input').nth(1).fill('0811222333')
+  // exclude the avatar uploader's hidden file input so positional indexing stays stable
+  await main.locator('input:not([type="file"])').nth(1).fill('0811222333')
   const savedInfo = page.waitForResponse(
     (r) => r.url().includes('/rest/v1/customers') && r.request().method() === 'PATCH',
   )

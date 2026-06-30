@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['products']['Row']
 
@@ -50,6 +52,7 @@ const form = reactive({
   currency: 'IDR',
   description: '',
   is_active: true,
+  image_url: '',
 })
 
 const numOrNull = (v: number | '') => (v === '' ? null : Number(v))
@@ -74,7 +77,7 @@ function reset() {
   Object.assign(form, {
     name: '', category_id: '', unit_id: '', brand_id: NONE, sub_category_id: NONE,
     country_id: NONE, weight_g: '', length_mm: '', width_mm: '', height_mm: '',
-    base_price: '', cost_price: '', currency: 'IDR', description: '', is_active: true,
+    base_price: '', cost_price: '', currency: 'IDR', description: '', is_active: true, image_url: '',
   })
   effectiveCategory.value = ''
 }
@@ -101,6 +104,7 @@ function openEdit(row: Row) {
     currency: row.currency,
     description: row.description ?? '',
     is_active: row.is_active,
+    image_url: row.image_url ?? '',
   })
   effectiveCategory.value = row.category_id
   open.value = true
@@ -124,6 +128,7 @@ async function save() {
       currency: form.currency.trim() || 'IDR',
       description: form.description.trim() || null,
       is_active: form.is_active,
+      image_url: form.image_url || null,
     }
     if (editing.value) await update(editing.value.id, payload)
     else await create(payload)
@@ -146,12 +151,86 @@ async function onDelete(row: Row) {
 const valid = computed(
   () => form.name.trim() && form.category_id && form.unit_id && Number(form.weight_g) > 0,
 )
+
+// --- Excel export/import (FK resolved by name) ---
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((p) => ({
+    name: p.name,
+    code: p.code ?? '',
+    brand: p.brands?.name ?? '',
+    category: p.categories?.name ?? '',
+    sub_category: p.sub_categories?.name ?? '',
+    unit: p.units?.name ?? '',
+    country: p.countries?.name ?? '',
+    weight_g: p.weight_g,
+    length_mm: p.length_mm,
+    width_mm: p.width_mm,
+    height_mm: p.height_mm,
+    base_price: p.base_price,
+    cost_price: p.cost_price,
+    currency: p.currency,
+    is_active: p.is_active,
+  }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const cat = matchByName(categories.value, r.category)
+    if (!cat) { report.errors.push({ row: rowNo, message: `category '${r.category ?? ''}' tidak ada di master` }); continue }
+    const unit = matchByName(units.value, r.unit)
+    if (!unit) { report.errors.push({ row: rowNo, message: `unit '${r.unit ?? ''}' tidak ada di master` }); continue }
+    const weight = Number(r.weight_g)
+    if (!weight || weight <= 0) { report.errors.push({ row: rowNo, message: 'weight_g harus > 0' }); continue }
+    const brand = r.brand ? matchByName(brands.value, r.brand) : undefined
+    if (r.brand && !brand) { report.errors.push({ row: rowNo, message: `brand '${r.brand}' tidak ada di master` }); continue }
+    const sub = r.sub_category ? matchByName(subCategories.value, r.sub_category) : undefined
+    if (r.sub_category && !sub) { report.errors.push({ row: rowNo, message: `sub_category '${r.sub_category}' tidak ada di master` }); continue }
+    const country = r.country ? matchByName(countries.value, r.country) : undefined
+    if (r.country && !country) { report.errors.push({ row: rowNo, message: `country '${r.country}' tidak ada di master` }); continue }
+    try {
+      await create({
+        name,
+        category_id: cat.id,
+        unit_id: unit.id,
+        brand_id: brand?.id ?? null,
+        sub_category_id: sub?.id ?? null,
+        country_id: country?.id ?? null,
+        weight_g: weight,
+        length_mm: numOrNull(numCell(r.length_mm)),
+        width_mm: numOrNull(numCell(r.width_mm)),
+        height_mm: numOrNull(numCell(r.height_mm)),
+        base_price: numOrNull(numCell(r.base_price)),
+        cost_price: numOrNull(numCell(r.cost_price)),
+        currency: String(r.currency || 'IDR'),
+        description: null,
+        image_url: null,
+        is_active: activeCell(r.is_active),
+      })
+      report.inserted++
+    } catch (e) {
+      report.errors.push({ row: rowNo, message: (e as Error).message })
+    }
+  }
+  return report
+}
 </script>
 
 <template>
   <div class="space-y-4">
     <PageHeader title="Products" subtitle="Katalog produk. Berat (gram) wajib untuk packing." icon="i-lucide-package">
       <template #actions>
+        <ExcelToolbar
+          filename="products"
+          :export-rows="exportRows"
+          :import-rows="importRows"
+          :columns="['name', 'code', 'brand', 'category', 'sub_category', 'unit', 'country', 'weight_g', 'length_mm', 'width_mm', 'height_mm', 'base_price', 'cost_price', 'currency', 'is_active']"
+          :can-export="can('products.read')"
+          :can-import="can('products.write')"
+        />
         <UButton v-if="can('products.write')" icon="i-lucide-plus" :disabled="!(categories?.length) || !(units?.length)" @click="openCreate">
           Tambah
         </UButton>
@@ -162,25 +241,30 @@ const valid = computed(
       Butuh minimal 1 Category & 1 Unit dulu sebelum bikin product.
     </p>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 font-medium">Brand</th>
-            <th class="px-3 py-2 font-medium">Category</th>
-            <th class="px-3 py-2 font-medium">Unit</th>
-            <th class="px-3 py-2 font-medium text-right">Weight (g)</th>
-            <th class="px-3 py-2 font-medium text-right">Price</th>
-            <th class="px-3 py-2 font-medium">Active</th>
-            <th class="px-3 py-2 w-24"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Brand</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Category</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Unit</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Weight (g)</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Price</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Active</th>
+            <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in items ?? []" :key="row.id">
             <td class="px-3 py-2">
-              <div class="font-medium">{{ row.name }}</div>
-              <div v-if="row.code" class="font-mono text-xs text-stone-400">{{ row.code }}</div>
+              <div class="flex items-center gap-2">
+                <MediaThumb :url="row.image_url" size="size-9" icon="i-lucide-package" />
+                <div>
+                  <div class="font-medium">{{ row.name }}</div>
+                  <div v-if="row.code" class="font-mono text-xs text-stone-400">{{ row.code }}</div>
+                </div>
+              </div>
             </td>
             <td class="px-3 py-2 text-stone-500">{{ row.brands?.name ?? '—' }}</td>
             <td class="px-3 py-2 text-stone-500">
@@ -188,7 +272,7 @@ const valid = computed(
             </td>
             <td class="px-3 py-2 text-stone-500">{{ row.units?.symbol ?? row.units?.name ?? '—' }}</td>
             <td class="px-3 py-2 text-right tabular-nums">{{ row.weight_g }}</td>
-            <td class="px-3 py-2 text-right tabular-nums text-stone-500">
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">
               {{ row.base_price != null ? `${row.currency} ${Number(row.base_price).toLocaleString('id-ID')}` : '—' }}
             </td>
             <td class="px-3 py-2">
@@ -208,6 +292,34 @@ const valid = computed(
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.name }}</span>
+            <span v-if="row.code" class="font-mono text-xs text-stone-400 shrink-0">{{ row.code }}</span>
+          </div>
+          <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft" class="shrink-0">
+            {{ row.is_active ? 'Yes' : 'No' }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">
+            {{ row.categories?.name }}<span v-if="row.sub_categories?.name"> / {{ row.sub_categories.name }}</span>
+          </span>
+          <span class="font-semibold text-primary tabular-nums shrink-0">
+            {{ row.base_price != null ? `${row.currency} ${Number(row.base_price).toLocaleString('id-ID')}` : '—' }}
+          </span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada produk.</p>
     </div>
 
     <UModal v-model:open="open" :title="editing ? 'Edit Product' : 'Tambah Product'" :ui="{ content: 'max-w-2xl' }">
@@ -266,6 +378,9 @@ const valid = computed(
 
           <UFormField label="Description">
             <UTextarea v-model="form.description" class="w-full" :rows="2" />
+          </UFormField>
+          <UFormField label="Foto produk">
+            <FileUpload v-model="form.image_url" folder="products" accept="image/*" />
           </UFormField>
           <UFormField label="Active">
             <USwitch v-model="form.is_active" />

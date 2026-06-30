@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           country_id: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           logo_url: string | null
           name: string
@@ -25,6 +26,7 @@ export type Database = {
         Insert: {
           country_id?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           logo_url?: string | null
           name: string
@@ -32,6 +34,7 @@ export type Database = {
         Update: {
           country_id?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           logo_url?: string | null
           name?: string
@@ -64,6 +67,51 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+        }
+        Relationships: []
+      }
+      company_profile: {
+        Row: {
+          address: string | null
+          bank_account: string | null
+          bank_holder: string | null
+          bank_name: string | null
+          email: string | null
+          id: number
+          invoice_note: string | null
+          logo_url: string | null
+          name: string
+          phone: string | null
+          qris_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          bank_account?: string | null
+          bank_holder?: string | null
+          bank_name?: string | null
+          email?: string | null
+          id?: number
+          invoice_note?: string | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          qris_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          bank_account?: string | null
+          bank_holder?: string | null
+          bank_name?: string | null
+          email?: string | null
+          id?: number
+          invoice_note?: string | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          qris_url?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -122,6 +170,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      couriers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
       }
       crm_activities: {
         Row: {
@@ -415,6 +484,106 @@ export type Database = {
           },
         ]
       }
+      expense_categories: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          code: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          issued_at: string
+          notes: string | null
+          order_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          order_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          order_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "ar_per_order"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_summaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_sources: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       load_items: {
         Row: {
           id: string
@@ -422,6 +591,7 @@ export type Database = {
           order_item_id: string
           placed_at: string
           placed_by: string | null
+          qty: number
           trip_route_id: string
         }
         Insert: {
@@ -430,6 +600,7 @@ export type Database = {
           order_item_id: string
           placed_at?: string
           placed_by?: string | null
+          qty?: number
           trip_route_id: string
         }
         Update: {
@@ -438,6 +609,7 @@ export type Database = {
           order_item_id?: string
           placed_at?: string
           placed_by?: string | null
+          qty?: number
           trip_route_id?: string
         }
         Relationships: [
@@ -707,6 +879,7 @@ export type Database = {
           fulfillment_type: string
           height_mm: number | null
           id: string
+          image_url: string | null
           item_name: string | null
           length_mm: number | null
           notes: string | null
@@ -726,6 +899,7 @@ export type Database = {
           fulfillment_type?: string
           height_mm?: number | null
           id?: string
+          image_url?: string | null
           item_name?: string | null
           length_mm?: number | null
           notes?: string | null
@@ -745,6 +919,7 @@ export type Database = {
           fulfillment_type?: string
           height_mm?: number | null
           id?: string
+          image_url?: string | null
           item_name?: string | null
           length_mm?: number | null
           notes?: string | null
@@ -920,6 +1095,27 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -930,6 +1126,7 @@ export type Database = {
           method: string | null
           order_id: string
           paid_at: string | null
+          proof_url: string | null
           recorded_by: string | null
           reference: string | null
           status: string
@@ -944,6 +1141,7 @@ export type Database = {
           method?: string | null
           order_id: string
           paid_at?: string | null
+          proof_url?: string | null
           recorded_by?: string | null
           reference?: string | null
           status?: string
@@ -958,6 +1156,7 @@ export type Database = {
           method?: string | null
           order_id?: string
           paid_at?: string | null
+          proof_url?: string | null
           recorded_by?: string | null
           reference?: string | null
           status?: string
@@ -1119,6 +1318,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           full_name: string | null
           id: string
@@ -1126,6 +1326,7 @@ export type Database = {
           user_type: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id: string
@@ -1133,6 +1334,7 @@ export type Database = {
           user_type?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
@@ -1334,6 +1536,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stores: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
       }
       sub_categories: {
         Row: {
@@ -1679,6 +1902,52 @@ export type Database = {
           },
         ]
       }
+      trip_travelers: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          role: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          role?: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          role?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_travelers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_travelers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trip_pnl"
+            referencedColumns: ["trip_id"]
+          },
+          {
+            foreignKeyName: "trip_travelers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trips: {
         Row: {
           code: string | null
@@ -1998,6 +2267,14 @@ export type Database = {
         }
         Relationships: []
       }
+      work_queue_counts: {
+        Row: {
+          fulfillment_type: string | null
+          n: number | null
+          status: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_moment: {
@@ -2009,6 +2286,7 @@ export type Database = {
         }
         Returns: string
       }
+      sync_pack_status: { Args: { p_item: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

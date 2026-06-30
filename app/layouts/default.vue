@@ -61,7 +61,7 @@ const linkClass = (path: string | null) =>
       </ClientOnly>
     </aside>
 
-    <div class="md:pl-60 flex flex-col min-h-screen">
+    <div class="md:pl-60 flex flex-col h-dvh">
       <header
         class="sticky top-0 z-20 h-14 border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 flex items-center gap-2 sm:gap-3 px-3 sm:px-4"
       >
@@ -75,7 +75,7 @@ const linkClass = (path: string | null) =>
         />
 
         <button
-          class="flex min-w-0 flex-1 max-w-md items-center gap-2 h-9 rounded-lg border border-stone-200 dark:border-stone-800 px-3 text-sm text-stone-400 hover:border-stone-300 dark:hover:border-stone-700 transition-colors"
+          class="flex min-w-0 flex-1 max-w-md items-center gap-2 h-9 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 text-sm text-stone-400 hover:border-stone-300 dark:hover:border-stone-700 transition-colors"
           aria-label="Cari (Command-K)"
           @click="cmdkOpen = true"
         >
@@ -87,12 +87,7 @@ const linkClass = (path: string | null) =>
 
         <div class="flex-1" />
 
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-bell"
-          aria-label="Notifikasi"
-        />
+        <AppNotifications />
         <AppUserMenu />
       </header>
       <main class="flex-1 overflow-y-auto p-4 sm:p-6">
@@ -101,5 +96,6 @@ const linkClass = (path: string | null) =>
     </div>
 
     <AppCommandPalette />
+    <MediaViewer />
   </div>
 </template>

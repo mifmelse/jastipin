@@ -1,11 +1,35 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['categories']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useCategories()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useCategories()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((c) => ({ name: c.name, description: c.description ?? '', is_active: c.is_active }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((c) => c.name))
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const description = String(r.description ?? '').trim() || null
+    const { error } = await supabase.from('categories').upsert({ name, description, is_active: activeCell(r.is_active) }, { onConflict: 'name' })
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const open = ref(false)
 const saving = ref(false)
@@ -47,18 +71,26 @@ async function onDelete(row: Row) {
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+      <ExcelToolbar
+        filename="categories"
+        :export-rows="exportRows"
+        :import-rows="importRows"
+        :columns="['name', 'description', 'is_active']"
+        :can-export="can('categories.read')"
+        :can-import="can('categories.write')"
+      />
       <UButton v-if="can('categories.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 font-medium">Description</th>
-            <th class="px-3 py-2 font-medium">Active</th>
-            <th class="px-3 py-2 w-24"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Description</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Active</th>
+            <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -82,6 +114,28 @@ async function onDelete(row: Row) {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.name }}</span>
+          </div>
+          <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft" class="shrink-0">
+            {{ row.is_active ? 'Yes' : 'No' }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ row.description ?? '—' }}</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada data.</p>
     </div>
 
     <UModal v-model:open="open" :title="editing ? 'Edit Category' : 'Tambah Category'">

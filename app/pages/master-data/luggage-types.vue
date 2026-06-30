@@ -1,11 +1,61 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { ExcelRow } from '~/composables/useExcel'
+import type { ImportReport } from '~/components/ExcelToolbar.vue'
 
 type Row = Database['public']['Tables']['luggage_types']['Row']
 
 const { can } = useCan()
-const { items, create, update, remove } = useLuggageTypes()
+const supabase = useSupabaseClient<Database>()
+const { items, create, update, remove, refresh } = useLuggageTypes()
 const toast = useToast()
+
+function exportRows(): ExcelRow[] {
+  return (items.value ?? []).map((l) => ({
+    name: l.name,
+    category: l.category,
+    max_weight_g: l.max_weight_g,
+    tare_weight_g: l.tare_weight_g,
+    max_volume_cm3: l.max_volume_cm3,
+    inner_length_mm: l.inner_length_mm,
+    inner_width_mm: l.inner_width_mm,
+    inner_height_mm: l.inner_height_mm,
+    regulation_note: l.regulation_note ?? '',
+    is_active: l.is_active,
+  }))
+}
+async function importRows(rows: ExcelRow[]): Promise<ImportReport> {
+  const report: ImportReport = { inserted: 0, updated: 0, errors: [] }
+  const existing = new Set((items.value ?? []).map((l) => l.name))
+  const CATS = ['checked', 'cabin', 'personal']
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i]!
+    const rowNo = i + 2
+    const name = String(r.name ?? '').trim()
+    if (!name) { report.errors.push({ row: rowNo, message: 'name kosong' }); continue }
+    const category = String(r.category ?? '').trim().toLowerCase()
+    if (!CATS.includes(category)) { report.errors.push({ row: rowNo, message: `category harus salah satu dari ${CATS.join('/')}` }); continue }
+    const maxW = Number(r.max_weight_g)
+    if (!maxW || maxW <= 0) { report.errors.push({ row: rowNo, message: 'max_weight_g harus > 0' }); continue }
+    const { error } = await supabase.from('luggage_types').upsert({
+      name,
+      category,
+      max_weight_g: maxW,
+      tare_weight_g: Number(r.tare_weight_g) || 0,
+      max_volume_cm3: numCell(r.max_volume_cm3) === '' ? null : Number(r.max_volume_cm3),
+      inner_length_mm: numCell(r.inner_length_mm) === '' ? null : Number(r.inner_length_mm),
+      inner_width_mm: numCell(r.inner_width_mm) === '' ? null : Number(r.inner_width_mm),
+      inner_height_mm: numCell(r.inner_height_mm) === '' ? null : Number(r.inner_height_mm),
+      regulation_note: String(r.regulation_note ?? '').trim() || null,
+      is_active: activeCell(r.is_active),
+    }, { onConflict: 'name' })
+    if (error) { report.errors.push({ row: rowNo, message: error.message }); continue }
+    if (existing.has(name)) report.updated++
+    else report.inserted++
+  }
+  await refresh()
+  return report
+}
 
 const CATEGORY_OPTIONS = [
   { label: 'Checked', value: 'checked' },
@@ -92,32 +142,33 @@ async function onDelete(row: Row) {
 
 <template>
   <div class="space-y-4">
-    <PageHeader title="Luggage Types" subtitle="Master wadah angkut. Berat dalam gram, dimensi dalam mm." icon="i-lucide-briefcase">
+    <PageHeader title="Luggage Types" subtitle="Jenis luggage (koper, kabin, ransel, tote). Berat dalam gram, dimensi dalam mm." icon="i-lucide-briefcase">
       <template #actions>
+        <ExcelToolbar filename="luggage-types" :export-rows="exportRows" :import-rows="importRows" :columns="['name', 'category', 'max_weight_g', 'tare_weight_g', 'max_volume_cm3', 'inner_length_mm', 'inner_width_mm', 'inner_height_mm', 'regulation_note', 'is_active']" :can-export="can('luggage_types.read')" :can-import="can('luggage_types.write')" />
         <UButton v-if="can('luggage_types.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-900 text-left text-gray-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 font-medium">Category</th>
-            <th class="px-3 py-2 font-medium text-right">Max (g)</th>
-            <th class="px-3 py-2 font-medium text-right">Tare (g)</th>
-            <th class="px-3 py-2 font-medium">Active</th>
-            <th class="px-3 py-2 w-24"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Category</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Max (g)</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Tare (g)</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Active</th>
+            <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in items ?? []" :key="row.id">
             <td class="px-3 py-2 font-medium">{{ row.name }}</td>
             <td class="px-3 py-2">
               <UBadge color="neutral" variant="soft">{{ row.category }}</UBadge>
             </td>
             <td class="px-3 py-2 text-right tabular-nums">{{ row.max_weight_g }}</td>
-            <td class="px-3 py-2 text-right tabular-nums text-gray-500">{{ row.tare_weight_g }}</td>
+            <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ row.tare_weight_g }}</td>
             <td class="px-3 py-2">
               <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft">
                 {{ row.is_active ? 'Yes' : 'No' }}
@@ -131,10 +182,33 @@ async function onDelete(row: Row) {
             </td>
           </tr>
           <tr v-if="!(items?.length)">
-            <td colspan="6" class="px-3 py-6 text-center text-gray-400">Belum ada data.</td>
+            <td colspan="6" class="px-3 py-6 text-center text-stone-400">Belum ada data.</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.name }}</span>
+          </div>
+          <UBadge :color="row.is_active ? 'success' : 'neutral'" variant="soft" class="shrink-0">
+            {{ row.is_active ? 'Yes' : 'No' }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ row.category }}</span>
+          <span class="font-medium tabular-nums shrink-0">{{ row.max_weight_g }} g</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada data.</p>
     </div>
 
     <UModal v-model:open="open" :title="editing ? 'Edit Luggage Type' : 'Tambah Luggage Type'">

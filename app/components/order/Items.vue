@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 
+type SourcingRec = { is_substitute: boolean; substitute_note: string | null }
 type ItemRow = Database['public']['Tables']['order_items']['Row'] & {
-  products?: { name: string } | null
+  products?: { name: string; image_url: string | null; base_price: number | null; weight_g: number | null; length_mm: number | null; width_mm: number | null; height_mm: number | null } | null
   units?: { name: string; symbol: string | null } | null
+  // unique FK → supabase may embed as an object or a single-element array
+  sourcing_records?: SourcingRec | SourcingRec[] | null
 }
 
 const props = defineProps<{ orderId: string; currency: string }>()
@@ -15,13 +18,36 @@ const { items: units } = useUnits()
 const toast = useToast()
 
 const productOptions = computed(() => (products.value ?? []).map((p) => ({ label: p.name, value: p.id })))
+// The picked product's catalog data — price auto-fills, weight/dims come from here.
+const selectedProduct = computed(() => (products.value ?? []).find((p) => p.id === form.product_id) ?? null)
+function pickProduct(id: string) {
+  form.product_id = id
+  const p = (products.value ?? []).find((x) => x.id === id)
+  if (p) form.requested_price = p.base_price ?? '' // auto-fill (editable)
+}
+// surfaced from the sourcing step (substitution = barang diganti)
+const substitutionOf = (i: ItemRow) => {
+  const raw = i.sourcing_records
+  const sr = Array.isArray(raw) ? raw[0] : raw
+  return sr?.is_substitute ? sr : null
+}
 const unitOptions = computed(() => [
   { label: '— unit —', value: NONE },
   ...(units.value ?? []).map((u) => ({ label: u.symbol ? `${u.name} (${u.symbol})` : u.name, value: u.id })),
 ])
 
 const itemLabel = (i: ItemRow) => i.products?.name ?? i.item_name ?? '(item)'
+// product items show the catalog photo; free-text items their own upload
+const itemPhoto = (i: ItemRow) => (i.product_id ? i.products?.image_url : i.image_url) ?? null
+// drop-in = customer's own goods (no purchase cost) → no item price; revenue is the order-level fee
+const priced = (i: ItemRow) => i.fulfillment_type === 'sourcing'
 const lineTotal = (i: ItemRow) => i.qty * Number(i.requested_price ?? 0)
+
+// Berat per-unit (free-text input, atau dari produk) × qty = total.
+const perUnitWeight = computed(() =>
+  mode.value === 'free' ? Number(form.weight_g || 0) : Number(selectedProduct.value?.weight_g ?? 0),
+)
+const weightTotal = computed(() => perUnitWeight.value * (Number(form.qty) || 1))
 
 // --- add / edit ---
 // An item is EITHER a catalog product OR a free-text drop-in — never both.
@@ -43,6 +69,7 @@ const form = reactive({
   height_mm: '' as number | '',
   status: 'pending',
   notes: '',
+  image_url: '',
 })
 const showDims = ref(false)
 
@@ -50,7 +77,7 @@ function reset() {
   Object.assign(form, {
     product_id: '', item_name: '', fulfillment_type: 'sourcing', qty: 1, unit_id: NONE,
     requested_price: '', actual_price: '', weight_g: '', length_mm: '', width_mm: '', height_mm: '',
-    status: 'pending', notes: '',
+    status: 'pending', notes: '', image_url: '',
   })
   showDims.value = false
 }
@@ -77,6 +104,7 @@ function openEdit(i: ItemRow) {
     height_mm: i.height_mm ?? '',
     status: i.status,
     notes: i.notes ?? '',
+    image_url: i.image_url ?? '',
   })
   showDims.value = !!(i.length_mm || i.width_mm || i.height_mm)
   open.value = true
@@ -105,14 +133,17 @@ async function save() {
       fulfillment_type: form.fulfillment_type,
       qty: Number(form.qty) || 1,
       unit_id: toNullable(form.unit_id),
-      requested_price: num(form.requested_price),
-      actual_price: num(form.actual_price),
-      weight_g: num(form.weight_g),
-      length_mm: num(form.length_mm),
-      width_mm: num(form.width_mm),
-      height_mm: num(form.height_mm),
+      requested_price: form.fulfillment_type === 'sourcing' ? num(form.requested_price) : null,
+      actual_price: form.fulfillment_type === 'sourcing' ? num(form.actual_price) : null,
+      // product items inherit weight/dims from the catalog — only free-text items carry their own
+      weight_g: mode.value === 'free' ? num(form.weight_g) : null,
+      length_mm: mode.value === 'free' ? num(form.length_mm) : null,
+      width_mm: mode.value === 'free' ? num(form.width_mm) : null,
+      height_mm: mode.value === 'free' ? num(form.height_mm) : null,
       status: form.status,
       notes: form.notes.trim() || null,
+      // product items show the catalog photo — only free-text items carry their own
+      image_url: mode.value === 'free' ? form.image_url || null : null,
     }
     if (editingId.value) await update(editingId.value, payload)
     else await create(payload)
@@ -144,24 +175,33 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
       <UButton icon="i-lucide-plus" @click="openCreate">Tambah item</UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Item</th>
-            <th class="px-3 py-2 font-medium">Fulfillment</th>
-            <th class="px-3 py-2 font-medium text-right">Qty</th>
-            <th class="px-3 py-2 font-medium text-right">Harga</th>
-            <th class="px-3 py-2 font-medium text-right">Subtotal</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-20"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Item</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Fulfillment</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Qty</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Harga</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Subtotal</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-20"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="i in (items as ItemRow[]) ?? []" :key="i.id" class="hover:bg-stone-50 dark:hover:bg-stone-900/50">
             <td class="px-3 py-2">
-              <div class="font-medium">{{ itemLabel(i) }}</div>
-              <div v-if="!i.product_id" class="text-xs text-stone-400">titipan</div>
+              <div class="flex items-center gap-2">
+                <MediaThumb :url="itemPhoto(i)" size="size-9" icon="i-lucide-box" />
+                <div class="min-w-0">
+                  <div class="font-medium flex items-center gap-1.5">
+                    {{ itemLabel(i) }}
+                    <UBadge v-if="substitutionOf(i)" color="warning" variant="soft" size="xs">diganti</UBadge>
+                  </div>
+                  <div v-if="!i.product_id" class="text-xs text-stone-400">titipan</div>
+                  <div v-if="substitutionOf(i)?.substitute_note" class="text-xs text-warning truncate max-w-[18rem]">↳ {{ substitutionOf(i)?.substitute_note }}</div>
+                </div>
+              </div>
             </td>
             <td class="px-3 py-2">
               <UBadge :color="i.fulfillment_type === 'sourcing' ? 'info' : 'neutral'" variant="soft">
@@ -171,8 +211,8 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
             <td class="px-3 py-2 text-right tabular-nums">
               {{ i.qty }}<span v-if="i.units" class="text-stone-400"> {{ i.units.symbol ?? i.units.name }}</span>
             </td>
-            <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ money(i.requested_price) }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">{{ money(lineTotal(i)) }}</td>
+            <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ priced(i) ? money(i.requested_price) : '—' }}</td>
+            <td class="px-3 py-2 text-right tabular-nums" :class="priced(i) ? 'font-semibold text-primary' : 'text-stone-400'">{{ priced(i) ? money(lineTotal(i)) : '—' }}</td>
             <td class="px-3 py-2">
               <UBadge :color="itemStatusColor(i.status)" variant="soft" class="capitalize">
                 {{ i.status.replace('_', ' ') }}
@@ -190,6 +230,33 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="i in (items as ItemRow[]) ?? []"
+        :key="i.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ itemLabel(i) }}</span>
+            <UBadge v-if="substitutionOf(i)" color="warning" variant="soft" size="xs" class="shrink-0">diganti</UBadge>
+            <span v-if="!i.product_id" class="font-mono text-xs text-stone-400 shrink-0">titipan</span>
+          </div>
+          <UBadge :color="itemStatusColor(i.status)" variant="soft" class="capitalize shrink-0">
+            {{ i.status.replace('_', ' ') }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">
+            {{ i.qty }}<span v-if="i.units"> {{ i.units.symbol ?? i.units.name }}</span><template v-if="priced(i)"> × {{ money(i.requested_price) }}</template><template v-else> · drop-in (tanpa biaya)</template>
+          </span>
+          <span v-if="priced(i)" class="font-semibold text-primary tabular-nums shrink-0">{{ money(lineTotal(i)) }}</span>
+          <span v-else class="text-stone-400 tabular-nums shrink-0">—</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada item.</p>
     </div>
 
     <UModal v-model:open="open" :title="editingId ? 'Edit Item' : 'Tambah Item'">
@@ -215,7 +282,7 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
           </div>
 
           <UFormField v-if="mode === 'product'" label="Produk" required>
-            <USelect v-model="form.product_id" :items="productOptions" class="w-full" placeholder="Pilih produk…" />
+            <USelect :model-value="form.product_id" :items="productOptions" class="w-full" placeholder="Pilih produk…" @update:model-value="pickProduct" />
           </UFormField>
           <UFormField v-else label="Nama item" required>
             <UInput v-model="form.item_name" class="w-full" placeholder="mis. Skincare titipan" />
@@ -234,18 +301,24 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
             <UFormField label="Unit">
               <USelect v-model="form.unit_id" :items="unitOptions" class="w-full" />
             </UFormField>
-            <UFormField :label="`Harga diminta (${currency})`">
+            <UFormField v-if="form.fulfillment_type === 'sourcing'" :label="`Harga diminta (${currency})`" :help="mode === 'product' ? 'Auto dari produk (bisa diubah)' : undefined">
               <UInput v-model.number="form.requested_price" type="number" class="w-full" />
             </UFormField>
-            <UFormField :label="`Harga aktual (${currency})`" help="Yang benar-benar dibayar shopper.">
+            <UFormField v-if="form.fulfillment_type === 'sourcing'" :label="`Harga aktual (${currency})`" help="Yang benar-benar dibayar shopper.">
               <UInput v-model.number="form.actual_price" type="number" class="w-full" />
             </UFormField>
-            <UFormField label="Berat (gram)">
+            <UFormField v-if="mode === 'free'" label="Berat / unit (gram)" :help="`Total ${weightTotal.toLocaleString('id-ID')} g`">
               <UInput v-model.number="form.weight_g" type="number" class="w-full" />
+            </UFormField>
+            <UFormField v-else label="Berat / unit">
+              <div class="h-9 flex items-center text-sm text-stone-500">
+                <span v-if="selectedProduct?.weight_g != null">{{ Number(selectedProduct.weight_g).toLocaleString('id-ID') }} g · total {{ weightTotal.toLocaleString('id-ID') }} g</span>
+                <span v-else class="text-stone-400">dari produk</span>
+              </div>
             </UFormField>
           </div>
 
-          <div>
+          <div v-if="mode === 'free'">
             <button type="button" class="text-xs text-primary hover:underline" @click="showDims = !showDims">
               {{ showDims ? '− Sembunyikan' : '+ Tambah' }} dimensi (mm)
             </button>
@@ -258,6 +331,12 @@ const money = (n: number | null) => `${props.currency} ${Number(n ?? 0).toLocale
 
           <UFormField label="Notes">
             <UInput v-model="form.notes" class="w-full" />
+          </UFormField>
+          <UFormField v-if="mode === 'free'" label="Foto item" help="Referensi biar shopper kenal barangnya.">
+            <FileUpload v-model="form.image_url" folder="order-items" accept="image/*" />
+          </UFormField>
+          <UFormField v-else label="Foto item" help="Dari master produk.">
+            <MediaThumb :url="selectedProduct?.image_url" size="size-16" icon="i-lucide-box" />
           </UFormField>
         </div>
       </template>

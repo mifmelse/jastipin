@@ -72,7 +72,7 @@ const fmt = (n: number | null) => `${form.currency} ${Number(n ?? 0).toLocaleStr
 </script>
 
 <template>
-  <div class="grid gap-6 lg:grid-cols-2 max-w-4xl">
+  <div class="grid gap-8 lg:grid-cols-2 lg:gap-12">
     <div class="space-y-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <UFormField label="Status">
@@ -102,7 +102,7 @@ const fmt = (n: number | null) => `${form.currency} ${Number(n ?? 0).toLocaleStr
 
     <div class="space-y-2">
       <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Ringkasan</h2>
-      <dl class="rounded-lg border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800 text-sm">
+      <dl class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800 text-sm">
         <div class="flex justify-between px-3 py-2">
           <dt class="text-stone-500">Subtotal ({{ order.item_count }} item)</dt>
           <dd class="tabular-nums">{{ fmt(order.subtotal) }}</dd>

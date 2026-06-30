@@ -13,13 +13,14 @@ type Luggage = Database['public']['Tables']['luggages']['Row'] & {
 const { can } = useCan()
 const { items, create, update, remove } = useLuggages(tripId)
 const { items: types } = useLuggageTypes()
-const { items: profiles } = useProfiles()
+const { items: travelers } = useTripTravelers(tripId)
 const toast = useToast()
 
 const typeOptions = computed(() => (types.value ?? []).map((t) => ({ label: t.name, value: t.id })))
+// Scoped to this trip's travelers (B2) — not every user in the system.
 const travelerOptions = computed(() => [
   { label: '— belum di-assign —', value: NONE },
-  ...(profiles.value ?? []).map((p) => ({ label: p.full_name ?? '(tanpa nama)', value: p.id })),
+  ...(travelers.value ?? []).map((t) => ({ label: t.profiles?.full_name ?? '(tanpa nama)', value: t.profile_id })),
 ])
 
 const open = ref(false)
@@ -80,16 +81,16 @@ const itemCount = (l: Luggage) => l.load_items?.length ?? 0
       <UButton v-if="can('load_planning.write')" icon="i-lucide-plus" @click="openCreate">Tambah luggage</UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Label</th>
-            <th class="px-3 py-2 font-medium">Tipe</th>
-            <th class="px-3 py-2 font-medium">Traveler</th>
-            <th class="px-3 py-2 font-medium text-right">Isi</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-20"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Label</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Tipe</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Traveler</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Isi</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-20"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -115,11 +116,32 @@ const itemCount = (l: Luggage) => l.load_items?.length ?? 0
       </table>
     </div>
 
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="l in (items as Luggage[]) ?? []"
+        :key="l.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ l.label }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ l.luggage_types?.name }}</span>
+          </div>
+          <UBadge :color="luggageStatusColor(l.status)" variant="soft" class="capitalize shrink-0">{{ l.status }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ l.assigned?.full_name ?? '—' }}</span>
+          <span class="font-medium tabular-nums shrink-0">{{ itemCount(l) }} isi</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada luggage untuk trip ini.</p>
+    </div>
+
     <UModal v-model:open="open" :title="editingId ? 'Edit Luggage' : 'Tambah Luggage'">
       <template #body>
         <div class="space-y-4">
           <UFormField label="Label" required>
-            <UInput v-model="form.label" class="w-full" placeholder="mis. Koper A" />
+            <UInput v-model="form.label" class="w-full" placeholder="mis. Koper A, Ransel B, Kabin C" />
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Tipe" required>

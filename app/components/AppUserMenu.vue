@@ -9,6 +9,7 @@ const colorMode = useColorMode()
 const toast = useToast()
 
 const name = computed(() => auth.profile?.full_name || user.value?.email || 'User')
+const avatarUrl = computed(() => auth.profile?.avatar_url || '')
 const initials = computed(() => {
   const n = auth.profile?.full_name?.trim()
   if (n) return n.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase()
@@ -25,10 +26,11 @@ function setTheme(p: 'light' | 'dark' | 'system') {
 
 const editOpen = ref(false)
 const saving = ref(false)
-const form = reactive({ full_name: '', password: '' })
+const form = reactive({ full_name: '', password: '', avatar_url: '' })
 watch(editOpen, (v) => {
   if (v) {
     form.full_name = auth.profile?.full_name ?? ''
+    form.avatar_url = auth.profile?.avatar_url ?? ''
     form.password = ''
   }
 })
@@ -36,7 +38,7 @@ async function saveProfile() {
   saving.value = true
   try {
     if (user.value) {
-      const { error } = await supabase.from('profiles').update({ full_name: form.full_name.trim() || null }).eq('id', user.value.id)
+      const { error } = await supabase.from('profiles').update({ full_name: form.full_name.trim() || null, avatar_url: form.avatar_url || null }).eq('id', user.value.id)
       if (error) throw error
     }
     if (form.password) {
@@ -72,10 +74,11 @@ const items = computed<DropdownMenuItem[][]>(() => [
 <template>
   <UDropdownMenu :items="items" :content="{ align: 'end' }">
     <button
-      class="flex items-center justify-center size-9 rounded-full bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/15 transition-colors"
+      class="flex items-center justify-center size-9 rounded-full overflow-hidden bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/15 transition-colors"
       aria-label="Menu profil"
     >
-      {{ initials }}
+      <img v-if="avatarUrl" :src="avatarUrl" alt="" class="w-full h-full object-cover" />
+      <span v-else>{{ initials }}</span>
     </button>
   </UDropdownMenu>
 
@@ -84,6 +87,12 @@ const items = computed<DropdownMenuItem[][]>(() => [
       <div class="space-y-4">
         <UFormField label="Email">
           <UInput :model-value="user?.email ?? ''" disabled class="w-full" />
+        </UFormField>
+        <UFormField label="Foto profil">
+          <div class="flex items-center gap-3">
+            <MediaThumb :url="form.avatar_url" size="size-14" rounded="rounded-full" icon="i-lucide-user" />
+            <FileUpload v-model="form.avatar_url" folder="avatars" accept="image/*" />
+          </div>
         </UFormField>
         <UFormField label="Nama">
           <UInput v-model="form.full_name" class="w-full" />

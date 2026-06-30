@@ -82,19 +82,17 @@ const valid = computed(() => form.category.trim() && Number(form.amount) > 0)
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
-      <UButton v-if="can('trips.write')" icon="i-lucide-plus" @click="openCreate">Tambah expense</UButton>
-    </div>
+    <FabAdd label="Tambah expense" @click="openCreate" />
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Date</th>
-            <th class="px-3 py-2 font-medium">Category</th>
-            <th class="px-3 py-2 font-medium">Description</th>
-            <th class="px-3 py-2 font-medium text-right">Amount</th>
-            <th class="px-3 py-2 w-24"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Date</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Category</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Description</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Amount</th>
+            <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -102,7 +100,7 @@ const valid = computed(() => form.category.trim() && Number(form.amount) > 0)
             <td class="px-3 py-2 text-stone-500">{{ row.spent_at ?? '—' }}</td>
             <td class="px-3 py-2 font-medium">{{ row.category }}</td>
             <td class="px-3 py-2 text-stone-500">{{ row.description ?? '—' }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">
               {{ row.currency }} {{ Number(row.amount).toLocaleString('id-ID') }}
             </td>
             <td class="px-3 py-2">
@@ -126,12 +124,34 @@ const valid = computed(() => form.category.trim() && Number(form.amount) > 0)
       </table>
     </div>
 
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.category }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ row.spent_at ?? '—' }}</span>
+          </div>
+          <span class="font-semibold text-primary tabular-nums shrink-0">
+            {{ row.currency }} {{ Number(row.amount).toLocaleString('id-ID') }}
+          </span>
+        </div>
+        <div v-if="row.description" class="border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ row.description }}</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada expense.</p>
+    </div>
+
     <UModal v-model:open="open" :title="editing ? 'Edit Expense' : 'Tambah Expense'">
       <template #body>
         <div class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Category" required>
-              <UInput v-model="form.category" class="w-full" placeholder="transport, makan, …" />
+              <MasterSelect v-model="form.category" table="expense_categories" />
             </UFormField>
             <UFormField label="Spent at">
               <UInput v-model="form.spent_at" type="date" class="w-full" />

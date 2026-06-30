@@ -17,7 +17,7 @@ async function createTrip(page: Page, name: string, typeLabel: string) {
   await page.getByRole('option', { name: typeLabel, exact: true }).click()
   await page.getByRole('button', { name: 'Simpan' }).click()
   await expect(page.getByRole('heading', { name })).toBeVisible()
-  await page.getByRole('tab', { name: 'Routes/Legs' }).click()
+  await page.getByRole('tab', { name: 'Routes' }).click()
 }
 
 async function pickLegCountries(page: Page, from: string, to: string) {
@@ -31,12 +31,12 @@ async function pickLegCountries(page: Page, from: string, to: string) {
 test('trip single: exactly one leg allowed', async ({ page }) => {
   const name = `E2E Trip single ${ts}`
   await createTrip(page, name, 'Single')
-  await page.getByRole('button', { name: 'Tambah leg' }).click()
+  await page.getByRole('button', { name: 'Tambah route' }).click()
   await pickLegCountries(page, 'Indonesia', 'Japan')
   await page.getByRole('button', { name: 'Simpan' }).click()
   await expect(page.getByRole('row', { name: /Indonesia.*Japan/ })).toBeVisible()
   // no second leg
-  await expect(page.getByRole('button', { name: 'Tambah leg' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Tambah route' })).toHaveCount(0)
   await gotoReady(page, '/operations/trips')
   await deleteRow(page, new RegExp(name))
 })
@@ -44,13 +44,13 @@ test('trip single: exactly one leg allowed', async ({ page }) => {
 test('trip round: outbound + auto-created return', async ({ page }) => {
   const name = `E2E Trip round ${ts}`
   await createTrip(page, name, 'Round')
-  await page.getByRole('button', { name: 'Tambah rute' }).click()
+  await page.getByRole('button', { name: 'Tambah route' }).click()
   await pickLegCountries(page, 'Indonesia', 'Japan')
   await page.getByRole('button', { name: 'Simpan' }).click()
   // both legs exist: outbound + auto return (swapped)
   await expect(page.getByRole('row', { name: /Indonesia.*→.*Japan/ })).toBeVisible()
   await expect(page.getByRole('row', { name: /Japan.*→.*Indonesia/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Tambah rute' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Tambah route' })).toHaveCount(0)
   await gotoReady(page, '/operations/trips')
   await deleteRow(page, new RegExp(name))
 })
@@ -58,19 +58,19 @@ test('trip round: outbound + auto-created return', async ({ page }) => {
 test('trip multi: auto-chain + unbounded', async ({ page }) => {
   const name = `E2E Trip multi ${ts}`
   await createTrip(page, name, 'Multi')
-  await page.getByRole('button', { name: 'Tambah leg' }).click()
+  await page.getByRole('button', { name: 'Tambah route' }).click()
   await pickLegCountries(page, 'Indonesia', 'Japan')
   await page.getByRole('button', { name: 'Simpan' }).click()
   await expect(page.getByRole('row', { name: /Indonesia.*Japan/ })).toBeVisible()
   // second leg: From auto-chains to Japan
-  await page.getByRole('button', { name: 'Tambah leg' }).click()
+  await page.getByRole('button', { name: 'Tambah route' }).click()
   await expect(page.getByRole('dialog').getByRole('combobox').nth(0)).toContainText('Japan')
   await page.getByRole('dialog').getByRole('combobox').nth(1).click()
   await page.getByRole('option', { name: 'South Korea', exact: true }).click()
   await page.getByRole('button', { name: 'Simpan' }).click()
   await expect(page.getByRole('row', { name: /Japan.*South Korea/ })).toBeVisible()
   // still addable (unbounded)
-  await expect(page.getByRole('button', { name: 'Tambah leg' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Tambah route' })).toBeVisible()
   await gotoReady(page, '/operations/trips')
   await deleteRow(page, new RegExp(name))
 })
@@ -78,7 +78,7 @@ test('trip multi: auto-chain + unbounded', async ({ page }) => {
 test('trip type change resets legs', async ({ page }) => {
   const name = `E2E Trip reset ${ts}`
   await createTrip(page, name, 'Multi')
-  await page.getByRole('button', { name: 'Tambah leg' }).click()
+  await page.getByRole('button', { name: 'Tambah route' }).click()
   await pickLegCountries(page, 'Indonesia', 'Japan')
   await page.getByRole('button', { name: 'Simpan' }).click()
   await expect(page.getByRole('row', { name: /Indonesia.*Japan/ })).toBeVisible()
@@ -90,15 +90,15 @@ test('trip type change resets legs', async ({ page }) => {
   await page.getByRole('button', { name: 'Simpan' }).click()
   await page.getByRole('button', { name: 'Ganti & reset' }).click()
 
-  await page.getByRole('tab', { name: 'Routes/Legs' }).click()
-  await expect(page.getByText('Belum ada leg')).toBeVisible()
+  await page.getByRole('tab', { name: 'Routes' }).click()
+  await expect(page.getByText('Belum ada route').first()).toBeVisible()
   await gotoReady(page, '/operations/trips')
   await deleteRow(page, new RegExp(name))
 })
 
 test('trip slice B: bookings, expenses, itinerary, moments', async ({ page }) => {
   const name = `E2E Trip sub ${ts}`
-  await createTrip(page, name, 'Single') // lands on Routes/Legs
+  await createTrip(page, name, 'Single') // lands on Routes
 
   // --- Bookings ---
   await page.getByRole('tab', { name: 'Bookings' }).click()
@@ -112,9 +112,11 @@ test('trip slice B: bookings, expenses, itinerary, moments', async ({ page }) =>
   await page.getByRole('tab', { name: 'Expenses' }).click()
   await page.getByRole('button', { name: 'Tambah expense' }).click()
   let d = page.getByRole('dialog')
-  await d.locator('input[type="text"]').first().fill('Transport')
+  await d.getByRole('combobox').first().click() // category (master select)
+  await page.getByRole('option', { name: 'Transport', exact: true }).click()
+  await expect(page.getByRole('listbox')).toHaveCount(0)
   await d.locator('input[type="number"]').first().fill('1000') // amount
-  await d.getByRole('combobox').first().click() // currency
+  await d.getByRole('combobox').nth(1).click() // currency
   await page.getByRole('option', { name: 'JPY', exact: true }).click()
   await d.locator('input[type="number"]').nth(1).fill('110') // fx_rate (foreign → shown)
   await page.getByRole('button', { name: 'Simpan' }).click()

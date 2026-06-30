@@ -19,7 +19,7 @@ export function useLuggages(tripId: Ref<string | null>) {
         .select(
           '*, luggage_types(name, category, max_weight_g, tare_weight_g, max_volume_cm3, regulation_note), ' +
             'assigned:profiles(full_name), ' +
-            'load_items(id, trip_route_id, order_items(id, qty, item_name, weight_g, products(name), orders(code, customers(name))))',
+            'load_items(id, qty, trip_route_id, order_items(id, qty, item_name, weight_g, length_mm, width_mm, height_mm, products(name, weight_g, length_mm, width_mm, height_mm), orders(code, customers(name))))',
         )
         .eq('trip_id', tripId.value)
         .order('created_at')
@@ -59,6 +59,12 @@ export function useLuggages(tripId: Ref<string | null>) {
     await refresh()
     await refreshNuxtData(['luggage-simulation', 'packable-items'])
   }
+  async function setLoadItemQty(id: string, qty: number) {
+    const { error } = await supabase.from('load_items').update({ qty }).eq('id', id)
+    if (error) throw error
+    await refresh()
+    await refreshNuxtData(['luggage-simulation', 'packable-items'])
+  }
 
-  return { items, status, refresh, create, update, remove, addLoadItem, removeLoadItem }
+  return { items, status, refresh, create, update, remove, addLoadItem, removeLoadItem, setLoadItemQty }
 }

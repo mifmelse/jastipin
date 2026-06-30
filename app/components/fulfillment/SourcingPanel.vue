@@ -22,7 +22,7 @@ const user = useSupabaseUser()
 const toast = useToast()
 
 const legOptions = computed(() => [
-  { label: 'Semua leg', value: NONE },
+  { label: 'Semua route', value: NONE },
   ...(legs.value ?? []).map((l) => ({ label: legLabel(l as LegEmbed), value: l.id })),
 ])
 const currencyOptions = computed(() => (currencies.value ?? []).map((c) => ({ label: c.code, value: c.code })))
@@ -109,22 +109,22 @@ async function submit() {
 <template>
   <div class="space-y-3">
     <div class="flex items-center gap-2">
-      <span class="text-sm text-stone-500">Leg</span>
+      <span class="text-sm text-stone-500">Route</span>
       <USelect v-model="filterLeg" :items="legOptions" class="w-72" />
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Order</th>
-            <th class="px-3 py-2 font-medium">Customer</th>
-            <th class="px-3 py-2 font-medium">Item</th>
-            <th class="px-3 py-2 font-medium text-right">Qty</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 font-medium">Toko</th>
-            <th class="px-3 py-2 font-medium text-right">Modal (IDR)</th>
-            <th class="px-3 py-2 w-20"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Order</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Item</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Qty</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Toko</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Modal (IDR)</th>
+            <th class="px-3 py-2.5 w-20"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -142,7 +142,7 @@ async function submit() {
               </UBadge>
             </td>
             <td class="px-3 py-2 text-stone-500">{{ r.sourcing_records?.store_name ?? '—' }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">{{ fmtIDR(recTotal(r)) }}</td>
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">{{ fmtIDR(recTotal(r)) }}</td>
             <td class="px-3 py-2" @click.stop>
               <div class="flex justify-end">
                 <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-pencil" @click="openRecord(r)">Catat</UButton>
@@ -156,6 +156,29 @@ async function submit() {
       </table>
     </div>
 
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="r in (items as Row[]) ?? []"
+        :key="r.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ itemLabel(r) }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ r.orders?.code }}</span>
+          </div>
+          <UBadge :color="itemStatusColor(r.status)" variant="soft" class="capitalize shrink-0">
+            {{ r.status.replace('_', ' ') }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ r.sourcing_records?.store_name ?? '—' }}</span>
+          <span class="font-semibold text-primary tabular-nums shrink-0">{{ fmtIDR(recTotal(r)) }}</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Tidak ada item sourcing.</p>
+    </div>
+
     <UModal v-model:open="open" :title="active ? `Sourcing — ${itemLabel(active)}` : 'Sourcing'">
       <template #body>
         <div v-if="active" class="space-y-4">
@@ -167,7 +190,7 @@ async function submit() {
               <USelect v-model="form.status" :items="SOURCING_STATUS_OPTIONS" class="w-full" />
             </UFormField>
             <UFormField label="Toko">
-              <UInput v-model="form.store_name" class="w-full" placeholder="mis. Don Quijote" />
+              <MasterSelect v-model="form.store_name" table="stores" />
             </UFormField>
             <UFormField label="Tgl beli">
               <UInput v-model="form.purchased_at" type="date" class="w-full" />

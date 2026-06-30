@@ -1,34 +1,56 @@
 <script setup lang="ts">
 const route = useRoute()
+const router = useRouter()
 const id = route.params.id as string
 const { order, status, refresh } = useOrder(id)
+const { can } = useCan()
+const { getOrCreateForOrder } = useInvoices()
+const toast = useToast()
 
 const tabs = [
   { label: 'Order Info', slot: 'info' as const, icon: 'i-lucide-receipt' },
   { label: 'Items', slot: 'items' as const, icon: 'i-lucide-package' },
 ]
+
+const issuing = ref(false)
+async function issueInvoice() {
+  issuing.value = true
+  try {
+    const inv = await getOrCreateForOrder(id)
+    if (inv?.id) router.push(`/finance/invoices/${inv.id}`)
+  } catch (e) {
+    toast.add({ title: 'Gagal menerbitkan invoice', description: (e as Error).message, color: 'error' })
+  } finally {
+    issuing.value = false
+  }
+}
 </script>
 
 <template>
   <div class="space-y-4">
-    <NuxtLink
-      to="/operations/orders"
-      class="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-primary"
-    >
-      <UIcon name="i-lucide-arrow-left" class="size-4" /> Orders
-    </NuxtLink>
-
     <div v-if="status === 'pending' && !order" class="text-sm text-stone-400">Memuat…</div>
     <div v-else-if="!order" class="text-sm text-stone-400">Order tidak ditemukan.</div>
     <template v-else>
-      <div class="flex flex-wrap items-center gap-3">
-        <h1 class="text-xl font-semibold font-mono">{{ order.code }}</h1>
-        <span class="text-sm text-stone-500">{{ order.customers?.name }}</span>
-        <UBadge :color="orderStatusColor(order.status)" variant="soft" class="capitalize">
-          {{ order.status.replace('_', ' ') }}
-        </UBadge>
-        <span class="ml-auto text-sm font-semibold">{{ formatIDR(order.total_idr) }}</span>
-      </div>
+      <DetailHeader
+        back="/operations/orders"
+        back-label="Orders"
+        :title="order.code ?? 'Order'"
+        :subtitle="order.customers?.name ?? undefined"
+        icon="i-lucide-receipt"
+        mono
+      >
+        <template #badges>
+          <UBadge :color="orderStatusColor(order.status)" variant="soft" class="capitalize">
+            {{ order.status.replace('_', ' ') }}
+          </UBadge>
+        </template>
+        <template #meta>
+          <span class="font-semibold text-primary">{{ formatIDR(order.total_idr) }}</span>
+        </template>
+        <template #actions>
+          <UButton v-if="can('invoices.write')" icon="i-lucide-file-text" size="sm" :loading="issuing" @click="issueInvoice">Terbitkan invoice</UButton>
+        </template>
+      </DetailHeader>
 
       <UTabs :items="tabs" class="w-full">
         <template #info>

@@ -195,8 +195,8 @@ const canSave = computed(() => (mode.value === 'new' ? !!form.contact_name.trim(
           </UFormField>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <UFormField label="Source" help="ig, wa, referral…">
-              <UInput v-model="form.source" class="w-full" />
+            <UFormField label="Source">
+              <MasterSelect v-model="form.source" table="lead_sources" />
             </UFormField>
             <UFormField label="Stage">
               <USelect v-model="form.stage" :items="CRM_STAGE_OPTIONS" class="w-full" />

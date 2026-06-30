@@ -3,7 +3,7 @@ import type { Database } from '~/types/database.types'
 
 // Delete a user (profile cascades via FK). Cannot delete your own account.
 export default defineEventHandler(async (event) => {
-  const me = await requireAdmin(event)
+  const me = await requirePermission(event, 'users.delete')
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, statusMessage: 'id wajib' })
   if (id === me.id) {

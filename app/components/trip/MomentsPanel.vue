@@ -64,7 +64,7 @@ const fmtDate = (s: string) => new Date(s).toLocaleString('id-ID', { dateStyle: 
       <article
         v-for="post in (items as Post[])"
         :key="post.id"
-        class="rounded-lg border border-stone-200 dark:border-stone-800 p-3 space-y-2"
+        class="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
       >
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2 text-xs text-stone-500">

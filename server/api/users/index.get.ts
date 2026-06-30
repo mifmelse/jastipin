@@ -3,7 +3,7 @@ import type { Database } from '~/types/database.types'
 
 // List all users: auth.users (for email) merged with their profile row.
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, 'users.read')
   const admin = serverSupabaseServiceRole<Database>(event)
 
   const { data: list, error } = await admin.auth.admin.listUsers()
@@ -21,6 +21,7 @@ export default defineEventHandler(async (event) => {
       full_name: p?.full_name ?? null,
       role: p?.role ?? null,
       user_type: p?.user_type ?? null,
+      avatar_url: p?.avatar_url ?? null,
     }
   })
 })

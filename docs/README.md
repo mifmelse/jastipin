@@ -13,8 +13,8 @@ Spec lengkap untuk dieksekusi oleh Claude Code. Baca berurutan.
 3. Baca `02-data-model.md` — semua tabel/field (tulis SQL sendiri sesuai ini).
 4. Baca `03-menu-rbac.md` — menu dynamic + permission.
 5. Baca `04-modules/*` — spec per modul (tanggung jawab, tab, status, handoff).
-6. Ikuti `05-execution-plan.md` — bangun fase per fase, jangan loncat.
-7. Baca `06-as-built.md` — **realita implementasi & deviasi** (sumber kebenaran final).
+6. Baca `06-as-built.md` — **realita implementasi & deviasi** (sumber kebenaran final).
+7. Baca `07-uiux-revamp-plan.md` — **peta kerja revamp UI/UX yang lagi aktif** (sementara).
 
 ## Daftar file
 ```
@@ -34,9 +34,10 @@ docs/
 │   ├── 07-load-planning.md
 │   ├── 08-delivery.md
 │   ├── 09-finance.md
-│   └── 10-master-settings.md
-├── 05-execution-plan.md       urutan build bertahap (✅ 12/12 selesai)
-└── 06-as-built.md             realita implementasi + deviasi (BERLAKU bila beda)
+│   ├── 10-master-settings.md
+│   └── 11-import-export-excel.md  panduan file import/export (kolom per master)
+├── 06-as-built.md             realita implementasi + deviasi (BERLAKU bila beda)
+└── 07-uiux-revamp-plan.md     peta kerja revamp UI/UX (AKTIF, sementara — dihapus saat kelar)
 ```
 
 ## Keputusan terkunci (ringkas)

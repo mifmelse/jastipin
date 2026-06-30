@@ -5,6 +5,7 @@ const { can } = useCan()
 const { items, create, update, remove } = useUsers()
 const { items: roles } = useRoles()
 const { items: userTypes } = useUserTypes()
+const me = useSupabaseUser() // can't delete your own account
 const toast = useToast()
 
 const roleOptions = computed(() =>
@@ -18,11 +19,11 @@ const typeOptions = computed(() => [
 const open = ref(false)
 const saving = ref(false)
 const editingId = ref<string | null>(null)
-const form = reactive({ email: '', password: '', full_name: '', role: 'staff', user_type: NONE })
+const form = reactive({ email: '', password: '', full_name: '', role: 'staff', user_type: NONE, avatar_url: '' })
 
 function openCreate() {
   editingId.value = null
-  Object.assign(form, { email: '', password: '', full_name: '', role: 'staff', user_type: NONE })
+  Object.assign(form, { email: '', password: '', full_name: '', role: 'staff', user_type: NONE, avatar_url: '' })
   open.value = true
 }
 function openEdit(row: UserRow) {
@@ -33,6 +34,7 @@ function openEdit(row: UserRow) {
     full_name: row.full_name ?? '',
     role: row.role ?? 'staff',
     user_type: fromNullable(row.user_type),
+    avatar_url: row.avatar_url ?? '',
   })
   open.value = true
 }
@@ -44,6 +46,7 @@ async function save() {
         full_name: form.full_name.trim() || undefined,
         role: form.role,
         user_type: toNullable(form.user_type),
+        avatar_url: form.avatar_url || null,
       })
     } else {
       await create({
@@ -52,6 +55,7 @@ async function save() {
         full_name: form.full_name.trim() || undefined,
         role: form.role,
         user_type: toNullable(form.user_type) ?? undefined,
+        avatar_url: form.avatar_url || undefined,
       })
     }
     open.value = false
@@ -89,34 +93,58 @@ const canSave = computed(() =>
       </template>
     </PageHeader>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-900 text-left text-gray-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Email</th>
-            <th class="px-3 py-2 font-medium">Name</th>
-            <th class="px-3 py-2 font-medium">Role</th>
-            <th class="px-3 py-2 font-medium">Type</th>
-            <th class="px-3 py-2 w-24"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Email</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Name</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Role</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Type</th>
+            <th class="px-3 py-2.5 w-24"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
           <tr v-for="row in items ?? []" :key="row.id">
-            <td class="px-3 py-2">{{ row.email }}</td>
-            <td class="px-3 py-2 text-gray-500">{{ row.full_name }}</td>
+            <td class="px-3 py-2">
+              <div class="flex items-center gap-2">
+                <MediaThumb :url="row.avatar_url" size="size-8" rounded="rounded-full" icon="i-lucide-user" />
+                {{ row.email }}
+              </div>
+            </td>
+            <td class="px-3 py-2 text-stone-500">{{ row.full_name }}</td>
             <td class="px-3 py-2">
               <UBadge :color="row.role === 'admin' ? 'primary' : 'neutral'" variant="soft">{{ row.role }}</UBadge>
             </td>
-            <td class="px-3 py-2 text-gray-500">{{ row.user_type ?? '—' }}</td>
+            <td class="px-3 py-2 text-stone-500">{{ row.user_type ?? '—' }}</td>
             <td class="px-3 py-2">
               <div class="flex justify-end gap-1">
                 <UButton v-if="can('users.write')" size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="openEdit(row)" />
-                <UButton v-if="can('users.delete')" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
+                <UButton v-if="can('users.delete') && row.id !== me?.id" size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="onDelete(row)" />
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="row in items ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.email }}</span>
+          </div>
+          <UBadge :color="row.role === 'admin' ? 'primary' : 'neutral'" variant="soft" class="shrink-0">{{ row.role }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ row.full_name ?? '—' }}</span>
+          <span class="text-xs text-stone-400 shrink-0">{{ row.user_type ?? '—' }}</span>
+        </div>
+      </div>
     </div>
 
     <UModal v-model:open="open" :title="editingId ? 'Edit User' : 'Tambah User'">
@@ -130,6 +158,12 @@ const canSave = computed(() =>
           </UFormField>
           <UFormField label="Full name">
             <UInput v-model="form.full_name" class="w-full" />
+          </UFormField>
+          <UFormField label="Foto profil">
+            <div class="flex items-center gap-3">
+              <MediaThumb :url="form.avatar_url" size="size-12" rounded="rounded-full" icon="i-lucide-user" />
+              <FileUpload v-model="form.avatar_url" folder="avatars" accept="image/*" />
+            </div>
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Role">

@@ -16,7 +16,7 @@ export function usePackableItems(tripId: Ref<string | null>) {
 
       const { data, error } = await supabase
         .from('order_items')
-        .select('id, item_name, qty, weight_g, status, products(name), orders!inner(code, trip_route_id, customers(name))')
+        .select('id, item_name, qty, weight_g, length_mm, width_mm, height_mm, status, products(name, weight_g, length_mm, width_mm, height_mm), orders!inner(code, trip_route_id, customers(name))')
         .eq('status', 'in_warehouse')
         .in('orders.trip_route_id', legIds)
         .order('created_at')

@@ -7,6 +7,7 @@ export interface UserRow {
   full_name: string | null
   role: string | null
   user_type: string | null
+  avatar_url: string | null
 }
 
 export interface UserCreate {
@@ -15,12 +16,17 @@ export interface UserCreate {
   full_name?: string
   role?: string
   user_type?: string
+  avatar_url?: string
 }
 
 export function useUsers() {
+  // On SSR (e.g. a hard refresh) the internal $fetch must carry the browser's
+  // cookies, otherwise /api/users can't authenticate the caller and the table
+  // renders empty.
+  const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
   const { data: items, refresh, status } = useAsyncData<UserRow[]>(
     'settings-users',
-    () => $fetch('/api/users'),
+    () => $fetch('/api/users', { headers }),
   )
 
   async function create(payload: UserCreate) {
@@ -29,7 +35,7 @@ export function useUsers() {
   }
   async function update(
     id: string,
-    payload: { full_name?: string; role?: string; user_type?: string | null },
+    payload: { full_name?: string; role?: string; user_type?: string | null; avatar_url?: string | null },
   ) {
     await $fetch(`/api/users/${id}`, { method: 'PATCH', body: payload })
     await refresh()

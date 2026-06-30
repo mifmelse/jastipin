@@ -85,17 +85,17 @@ async function submit() {
       <USelect v-model="filterCondition" :items="conditionFilterOptions" class="w-52" />
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Order</th>
-            <th class="px-3 py-2 font-medium">Item</th>
-            <th class="px-3 py-2 font-medium text-right">Qty</th>
-            <th class="px-3 py-2 font-medium">Lokasi</th>
-            <th class="px-3 py-2 font-medium text-right">Berat aktual</th>
-            <th class="px-3 py-2 font-medium">Kondisi</th>
-            <th class="px-3 py-2 w-16"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Order</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Item</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Qty</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Lokasi</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Berat aktual</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Kondisi</th>
+            <th class="px-3 py-2.5 w-16"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -124,6 +124,29 @@ async function submit() {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="w in rows"
+        :key="w.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ itemLabel(w) }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ w.order_items?.orders?.code }}</span>
+          </div>
+          <UBadge :color="warehouseConditionColor(w.condition)" variant="soft" class="capitalize shrink-0">{{ w.condition }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ w.location ?? '—' }} · qty {{ w.order_items?.qty }}</span>
+          <span class="font-medium tabular-nums shrink-0">{{ fmtG(effWeight(w)) }}</span>
+        </div>
+      </div>
+      <p v-if="!rows.length" class="text-center text-stone-400 text-sm py-6">
+        {{ activeFilter ? 'Tidak ada item untuk kondisi ini.' : 'Stok kosong.' }}
+      </p>
     </div>
 
     <UModal v-model:open="open" :title="active ? `Stok — ${itemLabel(active)}` : 'Stok'">

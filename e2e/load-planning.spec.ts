@@ -38,6 +38,11 @@ test('load planning: create luggage, pack item, weight + status + simulation', a
   await page.getByRole('combobox').first().click()
   await page.getByRole('option', { name: new RegExp(TRIP) }).click()
 
+  // pick the route → packing scoped to this leg (B2)
+  await page.getByRole('combobox').nth(1).click()
+  await page.getByRole('option', { name: /→/ }).first().click()
+  await expect(page.getByRole('listbox')).toHaveCount(0)
+
   // create a Backpack luggage (tare 1000g, max 8000g)
   await page.getByRole('tab', { name: 'Luggage' }).click()
   await page.getByRole('button', { name: 'Tambah luggage' }).click()
@@ -47,11 +52,11 @@ test('load planning: create luggage, pack item, weight + status + simulation', a
   await lm.getByRole('combobox').first().click() // tipe
   await page.getByRole('option', { name: 'Backpack', exact: true }).click()
   await page.getByRole('button', { name: 'Simpan' }).click()
-  await expect(page.getByText(LUG)).toBeVisible()
+  await expect(page.getByText(LUG).first()).toBeVisible()
 
   // pack the item onto it
   await page.getByRole('tab', { name: 'Packing Board' }).click()
-  await expect(page.getByText('1 barang siap dimuat.')).toBeVisible()
+  await expect(page.getByText('1 barang siap dimuat di route ini.')).toBeVisible()
   await page.getByRole('button', { name: 'Tambah barang' }).click()
   const pm = page.getByRole('dialog')
   await pm.waitFor()
@@ -62,10 +67,10 @@ test('load planning: create luggage, pack item, weight + status + simulation', a
   await packed
 
   // card shows the item + weight = 4kg contents + 1kg tare = 5 kg; item left the queue
-  const card = page.locator('.w-72', { hasText: LUG })
+  const card = page.locator('.lp-luggage', { hasText: LUG })
   await expect(card).toContainText('E2E Lp Item')
   await expect(card).toContainText('5 kg')
-  await expect(page.getByText('0 barang siap dimuat.')).toBeVisible() // status mirrored → packed
+  await expect(page.getByText('0 barang siap dimuat di route ini.')).toBeVisible() // status mirrored → packed
 
   // simulation tab reflects the same weight
   await page.getByRole('tab', { name: 'Simulation' }).click()
@@ -74,5 +79,5 @@ test('load planning: create luggage, pack item, weight + status + simulation', a
   // unpack → item returns to the queue (status back to in_warehouse)
   await page.getByRole('tab', { name: 'Packing Board' }).click()
   await card.getByRole('button', { name: 'Keluarkan' }).click()
-  await expect(page.getByText('1 barang siap dimuat.')).toBeVisible()
+  await expect(page.getByText('1 barang siap dimuat di route ini.')).toBeVisible()
 })

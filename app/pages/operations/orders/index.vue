@@ -88,23 +88,23 @@ watch(legs, (list) => {
 
 <template>
   <div class="space-y-4">
-    <PageHeader title="Orders" subtitle="Transaksi inti — 1 customer untuk 1 leg." icon="i-lucide-shopping-cart">
+    <PageHeader title="Orders" subtitle="Transaksi inti — 1 customer untuk 1 route." icon="i-lucide-shopping-cart">
       <template #actions>
         <UButton v-if="can('orders.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Code</th>
-            <th class="px-3 py-2 font-medium">Customer</th>
-            <th class="px-3 py-2 font-medium">Leg</th>
-            <th class="px-3 py-2 font-medium text-right">Items</th>
-            <th class="px-3 py-2 font-medium text-right">Total</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-16"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Code</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Route</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Items</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide text-right">Total</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-16"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -118,7 +118,7 @@ watch(legs, (list) => {
             <td class="px-3 py-2 font-medium">{{ row.customers?.name ?? '—' }}</td>
             <td class="px-3 py-2 text-stone-500">{{ legLabel(row.trip_route ?? null) }}</td>
             <td class="px-3 py-2 text-right tabular-nums text-stone-500">{{ row.item_count ?? 0 }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">{{ formatIDR(row.total_idr) }}</td>
+            <td class="px-3 py-2 text-right tabular-nums font-semibold text-primary">{{ formatIDR(row.total_idr) }}</td>
             <td class="px-3 py-2">
               <UBadge :color="orderStatusColor(row.status)" variant="soft" class="capitalize">
                 {{ row.status.replace('_', ' ') }}
@@ -137,14 +137,41 @@ watch(legs, (list) => {
       </table>
     </div>
 
+    <!-- mobile: cards instead of a cramped table -->
+    <div class="md:hidden space-y-2">
+      <button
+        v-for="row in (items as OrderRow[]) ?? []"
+        :key="row.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+        @click="router.push(`/operations/orders/${row.id}`)"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ row.customers?.name ?? '—' }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ row.code }}</span>
+          </div>
+          <UBadge :color="orderStatusColor(row.status)" variant="soft" class="capitalize shrink-0">
+            {{ row.status.replace('_', ' ') }}
+          </UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate inline-flex items-center gap-1">
+            <UIcon name="i-lucide-plane" class="size-3.5 shrink-0" />{{ legLabel(row.trip_route ?? null) }}
+          </span>
+          <span class="font-semibold text-primary tabular-nums shrink-0">{{ formatIDR(row.total_idr) }}</span>
+        </div>
+      </button>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada order.</p>
+    </div>
+
     <UModal v-model:open="open" title="Tambah Order">
       <template #body>
         <div class="space-y-4">
           <UFormField label="Customer" required>
             <USelect v-model="form.customer_id" :items="customerOptions" class="w-full" placeholder="Pilih customer…" />
           </UFormField>
-          <UFormField label="Leg (trip route)" required help="Order menempel ke leg, bukan trip.">
-            <USelect v-model="form.trip_route_id" :items="legOptions" class="w-full" placeholder="Pilih leg…" />
+          <UFormField label="Route" required help="Order menempel ke route, bukan trip.">
+            <USelect v-model="form.trip_route_id" :items="legOptions" class="w-full" placeholder="Pilih route…" />
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Currency">

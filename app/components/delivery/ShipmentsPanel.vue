@@ -57,7 +57,7 @@ async function save() {
       })
     } else {
       const legId = orderLeg.value.get(form.order_id)
-      if (!legId) throw new Error('Order tidak punya leg pengantaran.')
+      if (!legId) throw new Error('Order tidak punya route pengantaran.')
       await create({
         order_id: form.order_id,
         trip_route_id: legId,
@@ -89,17 +89,17 @@ async function onDelete(s: Shipment) {
       <UButton v-if="can('delivery.write')" icon="i-lucide-plus" @click="openCreate">Buat shipment</UButton>
     </div>
 
-    <div class="rounded-lg border border-stone-200 dark:border-stone-800 overflow-x-auto">
+    <div class="hidden md:block rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900 text-left text-stone-500">
+        <thead class="bg-stone-200/70 dark:bg-stone-800/50 text-left text-stone-500 border-b border-stone-200 dark:border-stone-800">
           <tr>
-            <th class="px-3 py-2 font-medium">Order</th>
-            <th class="px-3 py-2 font-medium">Customer</th>
-            <th class="px-3 py-2 font-medium">Leg</th>
-            <th class="px-3 py-2 font-medium">Courier</th>
-            <th class="px-3 py-2 font-medium">Resi</th>
-            <th class="px-3 py-2 font-medium">Status</th>
-            <th class="px-3 py-2 w-20"></th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Order</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Customer</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Route</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Courier</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Resi</th>
+            <th class="px-3 py-2.5 font-medium text-xs uppercase tracking-wide">Status</th>
+            <th class="px-3 py-2.5 w-20"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
@@ -126,6 +126,27 @@ async function onDelete(s: Shipment) {
       </table>
     </div>
 
+    <div class="md:hidden space-y-2">
+      <div
+        v-for="s in (items as Shipment[]) ?? []"
+        :key="s.id"
+        class="w-full text-left rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-3 space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-medium truncate">{{ s.orders?.customers?.name ?? '—' }}</span>
+            <span class="font-mono text-xs text-stone-400 shrink-0">{{ s.orders?.code }}</span>
+          </div>
+          <UBadge :color="shipmentStatusColor(s.status)" variant="soft" class="capitalize shrink-0">{{ shipmentStatusLabel(s.status) }}</UBadge>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 pt-2">
+          <span class="text-xs text-stone-500 truncate">{{ s.courier ?? '—' }}</span>
+          <span class="font-mono text-xs text-stone-500 shrink-0">{{ s.tracking_no ?? '—' }}</span>
+        </div>
+      </div>
+      <p v-if="!(items?.length)" class="text-center text-stone-400 text-sm py-6">Belum ada shipment.</p>
+    </div>
+
     <UModal v-model:open="open" :title="editingId ? 'Edit Shipment' : 'Buat Shipment'">
       <template #body>
         <div class="space-y-4">
@@ -134,7 +155,7 @@ async function onDelete(s: Shipment) {
           </UFormField>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <UFormField label="Courier">
-              <UInput v-model="form.courier" class="w-full" placeholder="mis. JNE / GoSend" />
+              <MasterSelect v-model="form.courier" table="couriers" />
             </UFormField>
             <UFormField label="No. resi">
               <UInput v-model="form.tracking_no" class="w-full" />
@@ -143,7 +164,7 @@ async function onDelete(s: Shipment) {
               <USelect v-model="form.status" :items="SHIPMENT_STATUS_OPTIONS" class="w-full" />
             </UFormField>
           </div>
-          <p v-if="!editingId" class="text-xs text-stone-400">Leg pengantaran otomatis dari leg order.</p>
+          <p v-if="!editingId" class="text-xs text-stone-400">Route pengantaran otomatis dari route order.</p>
         </div>
       </template>
       <template #footer>
