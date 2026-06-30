@@ -113,7 +113,7 @@ const valid = computed(
 <template>
   <div class="space-y-4">
     <div class="flex justify-end gap-2">
-      <ExcelToolbar filename="countries" :export-rows="exportRows" :import-rows="importRows" :can-export="can('geography.read')" :can-import="can('geography.write')" />
+      <ExcelToolbar filename="countries" :export-rows="exportRows" :import-rows="importRows" :columns="['continent', 'iso2', 'iso3', 'name', 'dial_code']" :can-export="can('geography.read')" :can-import="can('geography.write')" />
       <UButton v-if="can('geography.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 

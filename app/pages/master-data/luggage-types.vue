@@ -144,7 +144,7 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Luggage Types" subtitle="Jenis luggage (koper, kabin, ransel, tote). Berat dalam gram, dimensi dalam mm." icon="i-lucide-briefcase">
       <template #actions>
-        <ExcelToolbar filename="luggage-types" :export-rows="exportRows" :import-rows="importRows" :can-export="can('luggage_types.read')" :can-import="can('luggage_types.write')" />
+        <ExcelToolbar filename="luggage-types" :export-rows="exportRows" :import-rows="importRows" :columns="['name', 'category', 'max_weight_g', 'tare_weight_g', 'max_volume_cm3', 'inner_length_mm', 'inner_width_mm', 'inner_height_mm', 'regulation_note', 'is_active']" :can-export="can('luggage_types.read')" :can-import="can('luggage_types.write')" />
         <UButton v-if="can('luggage_types.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

@@ -72,7 +72,7 @@ async function onDelete(row: Row) {
 <template>
   <div class="space-y-4">
     <div class="flex justify-end gap-2">
-      <ExcelToolbar filename="continents" :export-rows="exportRows" :import-rows="importRows" :can-export="can('geography.read')" :can-import="can('geography.write')" />
+      <ExcelToolbar filename="continents" :export-rows="exportRows" :import-rows="importRows" :columns="['code', 'name']" :can-export="can('geography.read')" :can-import="can('geography.write')" />
       <UButton v-if="can('geography.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
     </div>
 

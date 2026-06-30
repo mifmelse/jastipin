@@ -81,7 +81,7 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Currencies" subtitle="Mata uang. Base pelaporan = IDR." icon="i-lucide-coins">
       <template #actions>
-        <ExcelToolbar filename="currencies" :export-rows="exportRows" :import-rows="importRows" :can-export="can('currencies.read')" :can-import="can('currencies.write')" />
+        <ExcelToolbar filename="currencies" :export-rows="exportRows" :import-rows="importRows" :columns="['code', 'name', 'symbol', 'is_active']" :can-export="can('currencies.read')" :can-import="can('currencies.write')" />
         <UButton v-if="can('currencies.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

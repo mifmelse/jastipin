@@ -74,7 +74,7 @@ async function onDelete(row: Row) {
   <div class="space-y-4">
     <PageHeader title="Tax Rates" subtitle="Tarif pajak (mis. PPN 11%). Dipakai saat hitung total order." icon="i-lucide-percent">
       <template #actions>
-        <ExcelToolbar filename="tax-rates" :export-rows="exportRows" :import-rows="importRows" :can-export="can('tax_rates.read')" :can-import="can('tax_rates.write')" />
+        <ExcelToolbar filename="tax-rates" :export-rows="exportRows" :import-rows="importRows" :columns="['name', 'rate', 'is_active']" :can-export="can('tax_rates.read')" :can-import="can('tax_rates.write')" />
         <UButton v-if="can('tax_rates.write')" icon="i-lucide-plus" @click="openCreate">Tambah</UButton>
       </template>
     </PageHeader>

@@ -77,6 +77,7 @@ async function onDelete(row: Row) {
           filename="units"
           :export-rows="exportRows"
           :import-rows="importRows"
+          :columns="['name', 'symbol', 'is_active']"
           :can-export="can('units.read')"
           :can-import="can('units.write')"
         />
