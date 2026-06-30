@@ -120,9 +120,18 @@
   invoice jatuh tempo (`due_at < today`), luggage over-weight (dari `luggage_simulation`).
   `AppNotifications` (UPopover + dot merah) di topbar, tiap alert link ke halamannya.
 
-## FASE F — Wipe + re-seed master *(FASE 14 lama)*
-- Kosongkan semua **kecuali** user/roles/permissions/menu. Re-seed master pakai **Excel import**
-  (FASE A6) dari data asli user. Destruktif → konfirmasi eksplisit sebelum eksekusi.
+## FASE F — Full reset *(FASE 14 lama)* — ✅ **SELESAI**
+- **Scope final (revisi user):** sisakan **hanya** `roles` / `permissions` / `role_permissions` /
+  `menus`. Wipe **semua sisanya** — semua master, semua data operasional, **dan semua user/profiles**
+  (GOD/Miftah/e2e ikut terhapus). Lalu buat **satu** user baru `dev@jastipin.com` role `developer`.
+- **Tidak** re-seed master via Excel (rencana lama) — master sengaja **dikosongkan** untuk mulai
+  bersih; diisi nanti lewat app/Import saat user punya data asli.
+- Eksekusi: `truncate` dinamis semua tabel `public` kecuali 4 yang disisakan (`restart identity
+  cascade`) via Management API → hapus semua `auth.users` (cascade ke profiles) → `admin.createUser`
+  dev. Skrip one-off (scratchpad, **tidak** di-commit, tanpa secret di file). Destruktif →
+  dikonfirmasi eksplisit dulu.
+- Verifikasi pasca-reset: users=1 (`developer`), roles/perms/role_perms/menus utuh (4/92/202/32),
+  `developer` punya 92/92 grant, semua tabel operasional & master = 0.
 
 ---
 
